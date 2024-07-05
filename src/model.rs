@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 const PROFILES_DIR: &str = "~/.config/git-multiaccount-profiles";
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Profile {
     name: String,
     user_name: String,
