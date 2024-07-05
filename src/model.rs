@@ -7,6 +7,11 @@ use serde::{Deserialize, Serialize};
 
 const PROFILES_DIR: &str = "~/.config/git-multiaccount-profiles";
 
+fn profile_path(profile: &str) -> String {
+    let prof_dir = shellexpand::tilde(&PROFILES_DIR);
+    format!("{prof_dir}/{profile}.json")
+}
+
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Profile {
     name: String,
@@ -25,8 +30,8 @@ struct PartialProfile {
 // TODO - handle overriding existing profiles
 impl Profile {
     pub fn from_json(profile_name: String) -> Result<Self, serde_json::Error> {
-        let fname = &format!("{PROFILES_DIR}/{profile_name}.json");
-        let file = File::open(fname).expect(&format!("Error opening file: {fname}"));
+        let fname = profile_path(&profile_name);
+        let file = File::open(&fname).expect(&format!("Error opening file: {fname}"));
         let reader = BufReader::new(file);
 
         let partial: PartialProfile = serde_json::from_reader(reader)?;
@@ -36,8 +41,8 @@ impl Profile {
 
     pub fn to_json(self) -> Result<(), serde_json::Error> {
         let (profile_name, partial) = self.to_partial();
-        let fname = &format!("{PROFILES_DIR}/{profile_name}.json");
-        let file = File::open(fname).expect(&format!("Error writing to file: {fname}"));
+        let fname = profile_path(&profile_name);
+        let file = File::open(&fname).expect(&format!("Error writing to file: {fname}"));
         let writer = BufWriter::new(file);
 
         serde_json::to_writer(writer, &partial)
