@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use rand::thread_rng;
-use ssh_key::{LineEnding, PrivateKey, PublicKey};
+use ssh_key::{HashAlg, LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::Ed25519Keypair;
 
 use crate::model::Profile;
@@ -19,6 +19,11 @@ pub fn generate_keys(profile: &Profile) -> (PrivateKey, PublicKey) {
     public.set_comment(&profile.user_email);
 
     (private, public)
+}
+
+pub fn generate_randomart(key: &PrivateKey) -> String {
+    let fingerprint = key.fingerprint(HashAlg::Sha256);
+    fingerprint.to_randomart(RANDOMART_HEADER)
 }
 
 pub fn write_private_key(profile: &Profile, key: &PrivateKey) {

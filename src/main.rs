@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use crate::model::Profile;
-use crate::ssh::{generate_keys, write_private_key, write_public_key};
+use crate::ssh::{generate_keys, generate_randomart, write_private_key, write_public_key};
 
 mod cli;
 mod model;
@@ -16,6 +16,8 @@ fn main() {
         user_email: String::from("john.smith@example.com"),
     };
     let (priv_key, pub_key) = generate_keys(&profile);
+    let randomart = generate_randomart(&priv_key);
+    println!("{randomart}");
     write_private_key(&profile, &priv_key);
     write_public_key(&profile, &pub_key);
 }
