@@ -1,5 +1,7 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use std::fs::OpenOptions;
+use std::io::{BufWriter, Write};
 use std::path::Path;
 
 use rand::thread_rng;
@@ -9,6 +11,7 @@ use ssh_key::private::Ed25519Keypair;
 use crate::model::Profile;
 
 const SSH_KEYS_PATH: &str = "~/.ssh";
+const SSH_CONFIG_PATH: &str = "~/.ssh/config";
 const RANDOMART_HEADER: &str = "ED25519";
 
 pub type Result<T> = std::result::Result<T, SshError>;
@@ -21,6 +24,12 @@ pub struct SshError {
 impl From<String> for SshError {
     fn from(msg: String) -> Self {
         Self { msg }
+    }
+}
+
+impl From<&str> for SshError {
+    fn from(msg: &str) -> Self {
+        Self { msg: String::from(msg) }
     }
 }
 
@@ -59,6 +68,24 @@ pub fn write_public_key(profile: &Profile, key: &PublicKey) -> Result<()> {
         .map_err(|_| SshError::from(format!("Error writing public key: {path}")))
 }
 
+// TODO handle case when entry we're attempting to add already exists
+pub fn add_config_entry(profile: &Profile) -> Result<()> {
+    let config_entry = config_entry(&profile.name);
+    let path = ssh_config_path();
+    let file = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(&path)
+        .map_err(|_| SshError::from(format!("Error opening ssh config: {path}")))?;
+    let mut writer = BufWriter::new(file);
+    writer.write_all(config_entry.as_bytes())
+        .map_err(|_| SshError::from("Error writing to ssh config"))
+}
+
+pub fn remove_config_entry(profile: &Profile) -> Result<()> {
+    todo!()
+}
+
 fn private_key_path(key_file_name: &str) -> String {
     let keys_dir = shellexpand::tilde(&SSH_KEYS_PATH);
     format!("{keys_dir}/id_{key_file_name}")
@@ -67,4 +94,17 @@ fn private_key_path(key_file_name: &str) -> String {
 fn public_key_path(key_file_name: &str) -> String {
     let keys_dir = shellexpand::tilde(&SSH_KEYS_PATH);
     format!("{keys_dir}/id_{key_file_name}.pub")
+}
+
+fn ssh_config_path() -> String {
+    String::from(shellexpand::tilde(SSH_CONFIG_PATH))
+}
+
+fn config_entry(profile_name: &str) -> String {
+    format!(r#"
+Host github.com-{profile_name}
+    HostName        github.com
+    User            git
+    IdentityFile    ~/.ssh/id_{profile_name}
+"#)
 }
