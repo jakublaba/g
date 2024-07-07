@@ -359,7 +359,6 @@ dependencies = [
  "serde",
  "serde_json",
  "shellexpand",
- "ssh-encoding",
  "ssh-key",
 ]
 
