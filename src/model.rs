@@ -14,9 +14,9 @@ fn profile_path(profile: &str) -> String {
 
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Profile {
-    name: String,
-    user_name: String,
-    user_email: String,
+    pub name: String,
+    pub user_name: String,
+    pub user_email: String,
 }
 
 #[derive(Serialize, Deserialize)]
