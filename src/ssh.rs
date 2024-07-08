@@ -1,7 +1,9 @@
+use std::collections::HashSet;
 use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Display, format, Formatter};
+use std::fs;
 use std::fs::OpenOptions;
-use std::io::{BufWriter, Write};
+use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
 use rand::thread_rng;
@@ -73,6 +75,7 @@ pub fn add_config_entry(profile: &Profile) -> Result<()> {
     let config_entry = config_entry(&profile.name);
     let path = ssh_config_path();
     let file = OpenOptions::new()
+        .read(true)
         .write(true)
         .append(true)
         .open(&path)
@@ -83,7 +86,21 @@ pub fn add_config_entry(profile: &Profile) -> Result<()> {
 }
 
 pub fn remove_config_entry(profile: &Profile) -> Result<()> {
-    todo!()
+    let path = ssh_config_path();
+    let file = OpenOptions::new()
+        .read(true)
+        .open(&path)
+        .map_err(|_| SshError::from(format!("Error opening ssh config: {path}")))?;
+    let reader = BufReader::new(file);
+    let config_entry_lines = config_entry(&profile.name)
+        .split("\n")
+        .collect::<HashSet<_>>();
+    let lines = reader.lines()
+        .map(|r| r.unwrap())
+        .filter(|l| !config_entry_lines.contains(l))
+        .collect::<Vec<_>>();
+    fs::write(&path, lines)
+        .map_err(|_| SshError::from(format!("Error removing entry for profile {} from ssh config", &profile.name)))
 }
 
 fn private_key_path(key_file_name: &str) -> String {
