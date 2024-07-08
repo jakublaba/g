@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 use std::error::Error;
-use std::fmt::{Display, format, Formatter};
+use std::fmt::{Display, Formatter};
 use std::fs;
 use std::fs::OpenOptions;
-use std::io::{BufRead, BufReader, BufWriter, Read, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::path::Path;
 
 use rand::thread_rng;
@@ -70,42 +70,16 @@ pub fn write_public_key(profile: &Profile, key: &PublicKey) -> Result<()> {
         .map_err(|_| SshError::from(format!("Error writing public key: {path}")))
 }
 
-// TODO handle case when entry we're attempting to add already exists
-// TODO extract repeating code
 pub fn add_config_entry(profile: &Profile) -> Result<()> {
     let path = ssh_config_path();
-    let file = OpenOptions::new()
-        .read(true)
-        .append(true)
-        .open(&path)
-        .map_err(|_| SshError::from(format!("Error opening ssh config: {path}")))?;
-    let reader = BufReader::new(file);
-    let config_entry = config_entry(&profile.name);
-    let config_entry_lines = config_entry.lines().collect::<HashSet<_>>();
-    let content = reader.lines()
-        .map(|r| r.unwrap())
-        .filter(|l| !config_entry_lines.contains(l))
-        .collect::<Vec<_>>()
-        .join("\n")
-        + &config_entry;
+    let content = filtered_ssh_config(&profile.name)? + &config_entry(&profile.name);
     fs::write(&path, content)
         .map_err(|_| SshError::from(format!("Error appending entry for profile {} to ssh config", &profile.name)))
 }
 
 pub fn remove_config_entry(profile: &Profile) -> Result<()> {
-    let path = ssh_config_path();
-    let file = OpenOptions::new()
-        .read(true)
-        .open(&path)
-        .map_err(|_| SshError::from(format!("Error opening ssh config: {path}")))?;
-    let reader = BufReader::new(file);
-    let config_entry_lines = config_entry(&profile.name).lines().collect::<HashSet<_>>();
-    let content = reader.lines()
-        .map(|r| r.unwrap())
-        .filter(|l| !config_entry_lines.contains(l))
-        .collect::<Vec<_>>()
-        .join("\n");
-    fs::write(&path, content)
+    let content = filtered_ssh_config(&profile.name)?;
+    fs::write(&ssh_config_path(), content)
         .map_err(|_| SshError::from(format!("Error removing entry for profile {} from ssh config", &profile.name)))
 }
 
@@ -121,6 +95,26 @@ fn public_key_path(key_file_name: &str) -> String {
 
 fn ssh_config_path() -> String {
     String::from(shellexpand::tilde(SSH_CONFIG_PATH))
+}
+
+fn filtered_ssh_config(excluded_profile_name: &str) -> Result<String> {
+    let path = ssh_config_path();
+    let file = OpenOptions::new()
+        .read(true)
+        .open(&path)
+        .map_err(|_| SshError::from(format!("Error opening ssh config: {path}")))?;
+    let reader = BufReader::new(file);
+    let config_entry_lines = config_entry(excluded_profile_name)
+        .lines()
+        .map(String::from)
+        .collect::<HashSet<_>>();
+    let content = reader.lines()
+        .map(|r| r.unwrap())
+        .filter(|line| !config_entry_lines.contains(line))
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    Ok(content)
 }
 
 fn config_entry(profile_name: &str) -> String {
