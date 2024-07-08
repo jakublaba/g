@@ -1,5 +1,9 @@
+use std::collections::HashSet;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use std::fs;
+use std::fs::File;
+use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 
 use rand::thread_rng;
@@ -9,6 +13,7 @@ use ssh_key::private::Ed25519Keypair;
 use crate::model::Profile;
 
 const SSH_KEYS_PATH: &str = "~/.ssh";
+const SSH_CONFIG_PATH: &str = "~/.ssh/test_config";
 const RANDOMART_HEADER: &str = "ED25519";
 
 pub type Result<T> = std::result::Result<T, SshError>;
@@ -21,6 +26,12 @@ pub struct SshError {
 impl From<String> for SshError {
     fn from(msg: String) -> Self {
         Self { msg }
+    }
+}
+
+impl From<&str> for SshError {
+    fn from(msg: &str) -> Self {
+        Self { msg: String::from(msg) }
     }
 }
 
@@ -59,6 +70,19 @@ pub fn write_public_key(profile: &Profile, key: &PublicKey) -> Result<()> {
         .map_err(|_| SshError::from(format!("Error writing public key: {path}")))
 }
 
+pub fn add_config_entry(profile: &Profile) -> Result<()> {
+    let path = ssh_config_path();
+    let content = filtered_ssh_config(&profile.name)? + &config_entry(&profile.name);
+    fs::write(&path, content)
+        .map_err(|_| SshError::from(format!("Error appending entry for profile {} to ssh config", &profile.name)))
+}
+
+pub fn remove_config_entry(profile: &Profile) -> Result<()> {
+    let content = filtered_ssh_config(&profile.name)?;
+    fs::write(&ssh_config_path(), content)
+        .map_err(|_| SshError::from(format!("Error removing entry for profile {} from ssh config", &profile.name)))
+}
+
 fn private_key_path(key_file_name: &str) -> String {
     let keys_dir = shellexpand::tilde(&SSH_KEYS_PATH);
     format!("{keys_dir}/id_{key_file_name}")
@@ -67,4 +91,35 @@ fn private_key_path(key_file_name: &str) -> String {
 fn public_key_path(key_file_name: &str) -> String {
     let keys_dir = shellexpand::tilde(&SSH_KEYS_PATH);
     format!("{keys_dir}/id_{key_file_name}.pub")
+}
+
+fn ssh_config_path() -> String {
+    String::from(shellexpand::tilde(SSH_CONFIG_PATH))
+}
+
+fn filtered_ssh_config(excluded_profile_name: &str) -> Result<String> {
+    let path = ssh_config_path();
+    let file = File::open(&path)
+        .map_err(|_| SshError::from(format!("Error opening ssh config: {path}")))?;
+    let reader = BufReader::new(file);
+    let config_entry_lines = config_entry(excluded_profile_name)
+        .lines()
+        .map(String::from)
+        .collect::<HashSet<_>>();
+    let content = reader.lines()
+        .map(|r| r.unwrap())
+        .filter(|line| !config_entry_lines.contains(line))
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    Ok(content)
+}
+
+fn config_entry(profile_name: &str) -> String {
+    format!(r#"
+Host github.com-{profile_name}
+    HostName        github.com
+    User            git
+    IdentityFile    ~/.ssh/id_{profile_name}
+"#)
 }
