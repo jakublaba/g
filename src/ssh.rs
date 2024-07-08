@@ -2,8 +2,8 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::fs;
-use std::fs::OpenOptions;
-use std::io::{BufRead, BufReader, Read, Write};
+use std::fs::File;
+use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 
 use rand::thread_rng;
@@ -13,7 +13,7 @@ use ssh_key::private::Ed25519Keypair;
 use crate::model::Profile;
 
 const SSH_KEYS_PATH: &str = "~/.ssh";
-const SSH_CONFIG_PATH: &str = "~/.ssh/config";
+const SSH_CONFIG_PATH: &str = "~/.ssh/test_config";
 const RANDOMART_HEADER: &str = "ED25519";
 
 pub type Result<T> = std::result::Result<T, SshError>;
@@ -99,9 +99,7 @@ fn ssh_config_path() -> String {
 
 fn filtered_ssh_config(excluded_profile_name: &str) -> Result<String> {
     let path = ssh_config_path();
-    let file = OpenOptions::new()
-        .read(true)
-        .open(&path)
+    let file = File::open(&path)
         .map_err(|_| SshError::from(format!("Error opening ssh config: {path}")))?;
     let reader = BufReader::new(file);
     let config_entry_lines = config_entry(excluded_profile_name)
