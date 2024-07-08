@@ -71,18 +71,25 @@ pub fn write_public_key(profile: &Profile, key: &PublicKey) -> Result<()> {
 }
 
 // TODO handle case when entry we're attempting to add already exists
+// TODO extract repeating code
 pub fn add_config_entry(profile: &Profile) -> Result<()> {
-    let config_entry = config_entry(&profile.name);
     let path = ssh_config_path();
     let file = OpenOptions::new()
         .read(true)
-        .write(true)
         .append(true)
         .open(&path)
         .map_err(|_| SshError::from(format!("Error opening ssh config: {path}")))?;
-    let mut writer = BufWriter::new(file);
-    writer.write_all(config_entry.as_bytes())
-        .map_err(|_| SshError::from("Error writing to ssh config"))
+    let reader = BufReader::new(file);
+    let config_entry = config_entry(&profile.name);
+    let config_entry_lines = config_entry.lines().collect::<HashSet<_>>();
+    let content = reader.lines()
+        .map(|r| r.unwrap())
+        .filter(|l| !config_entry_lines.contains(l))
+        .collect::<Vec<_>>()
+        .join("\n")
+        + &config_entry;
+    fs::write(&path, content)
+        .map_err(|_| SshError::from(format!("Error appending entry for profile {} to ssh config", &profile.name)))
 }
 
 pub fn remove_config_entry(profile: &Profile) -> Result<()> {
@@ -92,14 +99,13 @@ pub fn remove_config_entry(profile: &Profile) -> Result<()> {
         .open(&path)
         .map_err(|_| SshError::from(format!("Error opening ssh config: {path}")))?;
     let reader = BufReader::new(file);
-    let config_entry_lines = config_entry(&profile.name)
-        .split("\n")
-        .collect::<HashSet<_>>();
-    let lines = reader.lines()
+    let config_entry_lines = config_entry(&profile.name).lines().collect::<HashSet<_>>();
+    let content = reader.lines()
         .map(|r| r.unwrap())
         .filter(|l| !config_entry_lines.contains(l))
-        .collect::<Vec<_>>();
-    fs::write(&path, lines)
+        .collect::<Vec<_>>()
+        .join("\n");
+    fs::write(&path, content)
         .map_err(|_| SshError::from(format!("Error removing entry for profile {} from ssh config", &profile.name)))
 }
 
