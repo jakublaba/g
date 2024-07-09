@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 
 pub mod config;
 pub mod key;
+pub mod client;
 
 pub type Result<T> = std::result::Result<T, SshError>;
 
