@@ -3,11 +3,12 @@ use std::fmt::{Display, Formatter};
 
 pub mod config;
 pub mod key;
+pub mod client;
 
 pub type Result<T> = std::result::Result<T, SshError>;
 
 #[derive(Debug)]
-pub struct SshError(pub String);
+pub struct SshError(String);
 
 impl From<String> for SshError {
     fn from(msg: String) -> Self {
