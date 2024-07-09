@@ -12,7 +12,7 @@ const URL_REGEX: Regex = Regex::new(r"(?<host>git@github\.com-?.*)(?<repo>:.+)")
 pub type Result<T> = std::result::Result<T, GitError>;
 
 #[derive(Debug)]
-pub struct GitError(pub String);
+pub struct GitError(String);
 
 impl From<String> for GitError {
     fn from(msg: String) -> Self {
@@ -34,7 +34,6 @@ impl Display for GitError {
 
 impl Error for GitError {}
 
-// TODO implement adding keys to ssh-agent in crate::ssh
 // TODO for now idk if the repository return type is useful or not
 pub fn clone(profile_name: &str, url: &str) -> Result<Repository> {
     let substituted_url = substitute_url(profile_name, url);
