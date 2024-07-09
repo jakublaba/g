@@ -100,6 +100,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
 
 [[package]]
+name = "bytes"
+version = "1.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "514de17de45fdb8dc022b1a7975556c53c86f9f0aa5f534b98977b171857c2c9"
+
+[[package]]
 name = "cc"
 version = "1.0.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -390,6 +396,7 @@ dependencies = [
  "serde",
  "serde_json",
  "shellexpand",
+ "ssh-agent-client-rs",
  "ssh-key",
 ]
 
@@ -967,6 +974,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "ssh-agent-client-rs"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fbc9798a2e1390157853f81735b9815be2a45dd2200c36646aad942de9074d78"
+dependencies = [
+ "bytes",
+ "signature",
+ "ssh-encoding",
+ "ssh-key",
+ "thiserror",
+]
+
+[[package]]
 name = "ssh-cipher"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -994,6 +1014,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca9b366a80cf18bb6406f4cf4d10aebfb46140a8c0c33f666a144c5c76ecbafc"
 dependencies = [
  "ed25519-dalek",
+ "num-bigint-dig",
  "p256",
  "p384",
  "p521",
