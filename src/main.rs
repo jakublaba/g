@@ -9,6 +9,7 @@ use crate::ssh::key::{ge, generate_pair, randomart, write_private_key, write_pub
 mod cli;
 mod model;
 mod ssh;
+mod git;
 
 fn main() {
     // let cli = Cli::parse();
