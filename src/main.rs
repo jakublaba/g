@@ -1,5 +1,3 @@
-use std::any::Any;
-
 use clap::Parser;
 use serde::ser::Error;
 
@@ -11,6 +9,7 @@ mod model;
 mod ssh;
 mod git;
 
+// TODO (globally) improve error handling to also pass the underlying error messages
 fn main() {
     // let cli = Cli::parse();
     // println!("{:#?}", cli);
