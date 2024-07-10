@@ -1,31 +1,10 @@
-use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::Display;
+
+use crate::ssh::error::Error;
 
 pub mod config;
 pub mod key;
 pub mod client;
+pub mod error;
 
-pub type Result<T> = std::result::Result<T, SshError>;
-
-#[derive(Debug)]
-pub struct SshError(String);
-
-impl From<String> for SshError {
-    fn from(msg: String) -> Self {
-        Self { 0: msg }
-    }
-}
-
-impl From<&str> for SshError {
-    fn from(msg: &str) -> Self {
-        Self { 0: String::from(msg) }
-    }
-}
-
-impl Display for SshError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl Error for SshError {}
+pub type Result<T> = std::result::Result<T, Error>;

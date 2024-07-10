@@ -1,30 +1,33 @@
+use std::env;
 use std::path::Path;
 
 use ssh_agent_client_rs::Client;
 use ssh_key::{PrivateKey, PublicKey};
 
-use crate::ssh::{Result, SshError};
-
-// TODO binding this at compile time is a VERY bad idea, SSH_AUTH_SOCK env var changes often
-// this will simply make the app shit itself after user restarts ssh-agent once
-const SSH_AUTH_SOCK: &str = env!("SSH_AUTH_SOCK");
+use crate::ssh::error::Error;
+use crate::ssh::Result;
 
 pub fn add_identity(key: &PrivateKey) -> Result<()> {
     let public = PublicKey::from(key).to_string();
     ssh_agent()?
         .add_identity(key)
-        .map_err(|_| SshError::from(format!("Error adding new identity to ssh-agent\n{public}")))
+        .map_err(|e| Error::AddIdentity(e, public))
 }
 
 pub fn remove_identity(key: &PrivateKey) -> Result<()> {
     let public = PublicKey::from(key).to_string();
     ssh_agent()?
         .remove_identity(key)
-        .map_err(|_| SshError::from(format!("Error removing identity from ssh-agent\n{public}")))
+        .map_err(|e| Error::RemoveIdentity(e, public))
 }
 
 fn ssh_agent() -> Result<Client> {
-    let ssh_auth_sock = Path::new(SSH_AUTH_SOCK);
-    Client::connect(ssh_auth_sock)
-        .map_err(|_| SshError::from(format!("Can't connect to ssh-agent at {SSH_AUTH_SOCK}")))
+    let ssh_auth_sock = ssh_auth_sock()?;
+    let ssh_auth_sock_path = Path::new(&ssh_auth_sock);
+    Client::connect(ssh_auth_sock_path)
+        .map_err(|_| Error::ConnectToAgent(ssh_auth_sock))
+}
+
+fn ssh_auth_sock() -> Result<String> {
+    env::var("SSH_AUTH_SOCK").map_err(|_| Error::SshAuthSock)
 }

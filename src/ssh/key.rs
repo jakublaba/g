@@ -5,7 +5,8 @@ use ssh_key::{HashAlg, LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::Ed25519Keypair;
 
 use crate::HOME;
-use crate::ssh::{Result, SshError};
+use crate::ssh::error::Error;
+use crate::ssh::Result;
 
 const SSH_DIR: &str = ".ssh";
 const ED25519: &str = "ED25519";
@@ -29,13 +30,13 @@ pub fn randomart(key: &PrivateKey) -> String {
 pub fn write_private_key(profile_name: &str, key: &PrivateKey) -> Result<()> {
     let path = private_key_path(profile_name);
     key.write_openssh_file(Path::new(&path), LineEnding::LF)
-        .map_err(|_| SshError::from(format!("Error writing private key: {path}")))
+        .map_err(|_| Error::WritePrivateKey(path))
 }
 
 pub fn write_public_key(profile_name: &str, key: &PublicKey) -> Result<()> {
     let path = public_key_path(profile_name);
     key.write_openssh_file(Path::new(&path))
-        .map_err(|_| SshError::from(format!("Error writing public key: {path}")))
+        .map_err(|_| Error::WritePublicKey(path))
 }
 
 fn private_key_path(profile_name: &str) -> String {
