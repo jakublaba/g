@@ -5,6 +5,8 @@ use ssh_key::{PrivateKey, PublicKey};
 
 use crate::ssh::{Result, SshError};
 
+// TODO binding this at compile time is a VERY bad idea, SSH_AUTH_SOCK env var changes often
+// this will simply make the app shit itself after user restarts ssh-agent once
 const SSH_AUTH_SOCK: &str = env!("SSH_AUTH_SOCK");
 
 pub fn add_identity(key: &PrivateKey) -> Result<()> {

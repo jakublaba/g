@@ -6,6 +6,7 @@ use ssh_key::private::Ed25519Keypair;
 
 use crate::ssh::{Result, SshError};
 
+// TODO shellexpand crate is redundant for expanding '~', we can just use HOME env var
 const SSH_DIR: &str = "~/.ssh";
 const ED25519: &str = "ED25519";
 
