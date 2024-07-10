@@ -3,9 +3,10 @@ use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+use crate::HOME;
 use crate::ssh::{Result, SshError};
 
-const SSH_CONFIG_DIR: &str = "~/.ssh/config";
+const SSH_CONFIG_DIR: &str = ".ssh/config";
 
 pub fn add_config_entry(profile_name: &str) -> Result<()> {
     let ssh_config_dir = ssh_config_dir();
@@ -33,7 +34,7 @@ fn filtered_ssh_config(excluded_profile_name: &str) -> Result<String> {
 }
 
 fn ssh_config_dir() -> String {
-    String::from(shellexpand::tilde(SSH_CONFIG_DIR))
+    format!("{HOME}/{SSH_CONFIG_DIR}")
 }
 
 fn config_entry(profile_name: &str) -> String {

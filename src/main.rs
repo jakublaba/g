@@ -9,6 +9,8 @@ mod model;
 mod ssh;
 mod git;
 
+pub const HOME: &str = env!("HOME");
+
 // TODO (globally) improve error handling to also pass the underlying error messages
 fn main() {
     // let cli = Cli::parse();

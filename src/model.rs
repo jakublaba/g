@@ -5,10 +5,12 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-const PROFILES_DIR: &str = "~/.config/git-multiaccount-profiles";
+use crate::HOME;
+
+const PROFILES_DIR: &str = ".config/git-multiaccount-profiles";
 
 fn profile_path(profile: &str) -> String {
-    let prof_dir = shellexpand::tilde(&PROFILES_DIR);
+    let prof_dir = format!("{HOME}/{PROFILES_DIR}");
     format!("{prof_dir}/{profile}.json")
 }
 

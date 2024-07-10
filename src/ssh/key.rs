@@ -4,10 +4,10 @@ use rand::thread_rng;
 use ssh_key::{HashAlg, LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::Ed25519Keypair;
 
+use crate::HOME;
 use crate::ssh::{Result, SshError};
 
-// TODO shellexpand crate is redundant for expanding '~', we can just use HOME env var
-const SSH_DIR: &str = "~/.ssh";
+const SSH_DIR: &str = ".ssh";
 const ED25519: &str = "ED25519";
 
 pub fn generate_pair(user_email: &str) -> (PrivateKey, PublicKey) {
@@ -39,11 +39,11 @@ pub fn write_public_key(profile_name: &str, key: &PublicKey) -> Result<()> {
 }
 
 fn private_key_path(profile_name: &str) -> String {
-    let ssh_dir = shellexpand::tilde(SSH_DIR);
+    let ssh_dir = format!("{HOME}/{SSH_DIR}");
     format!("{ssh_dir}/id_{profile_name}")
 }
 
 fn public_key_path(profile_name: &str) -> String {
-    let ssh_dir = shellexpand::tilde(SSH_DIR);
+    let ssh_dir = format!("{HOME}/{SSH_DIR}");
     format!("{ssh_dir}/id_{profile_name}.pub")
 }
