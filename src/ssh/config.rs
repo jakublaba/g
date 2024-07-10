@@ -3,23 +3,23 @@ use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-use crate::HOME;
 use crate::ssh::error::Error;
 use crate::ssh::Result;
 
+const HOME: &str = env!("HOME");
 const SSH_CONFIG_DIR: &str = ".ssh/config";
 
 pub fn add_config_entry(profile_name: &str) -> Result<()> {
-    let ssh_config_dir = ssh_config_dir();
+    let path = ssh_config_dir();
     let content = filtered_ssh_config(profile_name)? + &config_entry(profile_name);
-    fs::write(&ssh_config_dir, content)
-        .map_err(|e| Error::WriteConfig(String::from(profile_name), e))
+    fs::write(&path, content)
+        .map_err(|cause| Error::Io { path, cause })
 }
 
 fn filtered_ssh_config(excluded_profile_name: &str) -> Result<String> {
-    let ssh_config_dir = ssh_config_dir();
-    let file = File::open(&ssh_config_dir)
-        .map_err(Error::OpenConfig)?;
+    let path = ssh_config_dir();
+    let file = File::open(&path)
+        .map_err(|cause| Error::Io { path, cause })?;
     let reader = BufReader::new(file);
     let config_entry_lines = config_entry(excluded_profile_name)
         .lines()

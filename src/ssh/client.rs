@@ -2,30 +2,31 @@ use std::env;
 use std::path::Path;
 
 use ssh_agent_client_rs::Client;
-use ssh_key::{PrivateKey, PublicKey};
+use ssh_key::PrivateKey;
 
 use crate::ssh::error::Error;
 use crate::ssh::Result;
 
-pub fn add_identity(key: &PrivateKey) -> Result<()> {
-    let public = PublicKey::from(key).to_string();
+const HOME: &str = env!("HOME");
+
+pub fn add_identity(identity: &PrivateKey) -> Result<()> {
+    let ssh_auth_sock = ssh_auth_sock()?;
     ssh_agent()?
-        .add_identity(key)
-        .map_err(|e| Error::AddIdentity(e, public))
+        .add_identity(identity)
+        .map_err(|cause| Error::Agent { ssh_auth_sock, cause })
 }
 
-pub fn remove_identity(key: &PrivateKey) -> Result<()> {
-    let public = PublicKey::from(key).to_string();
+pub fn remove_identity(identity: &PrivateKey) -> Result<()> {
+    let ssh_auth_sock = ssh_auth_sock()?;
     ssh_agent()?
-        .remove_identity(key)
-        .map_err(|e| Error::RemoveIdentity(e, public))
+        .remove_identity(identity)
+        .map_err(|cause| Error::Agent { ssh_auth_sock, cause })
 }
 
 fn ssh_agent() -> Result<Client> {
     let ssh_auth_sock = ssh_auth_sock()?;
-    let ssh_auth_sock_path = Path::new(&ssh_auth_sock);
-    Client::connect(ssh_auth_sock_path)
-        .map_err(|_| Error::ConnectToAgent(ssh_auth_sock))
+    Client::connect(Path::new(&ssh_auth_sock))
+        .map_err(|cause| Error::Agent { ssh_auth_sock, cause })
 }
 
 fn ssh_auth_sock() -> Result<String> {

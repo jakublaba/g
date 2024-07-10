@@ -5,8 +5,8 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::HOME;
-
+// TODO make this into `profile` module and define custom Error + Result
+const HOME: &str = env!("HOME");
 const PROFILES_DIR: &str = ".config/git-multiaccount-profiles";
 
 fn profile_path(profile: &str) -> String {
