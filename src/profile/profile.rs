@@ -5,7 +5,9 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-// TODO make this into `profile` module and define custom Error + Result
+use crate::profile::error::Error;
+use crate::profile::Result;
+
 const HOME: &str = env!("HOME");
 const PROFILES_DIR: &str = ".config/git-multiaccount-profiles";
 
@@ -31,23 +33,26 @@ struct PartialProfile {
 
 // TODO - handle overriding existing profiles
 impl Profile {
-    pub fn read_json(profile_name: &str) -> Result<Self, serde_json::Error> {
-        let fname = profile_path(profile_name);
-        let file = File::open(&fname).expect(&format!("Error opening file: {fname}"));
+    pub fn read_json(profile_name: &str) -> Result<Self> {
+        let path = profile_path(profile_name);
+        let file = File::open(&path)
+            .map_err(|cause| Error::Io { path, cause })?;
         let reader = BufReader::new(file);
-
-        let partial: PartialProfile = serde_json::from_reader(reader)?;
+        let partial = serde_json::from_reader(reader)
+            .map_err(Error::Serde)?;
 
         Ok((profile_name, partial).into())
     }
 
-    pub fn write_json(self) -> Result<(), serde_json::Error> {
+    pub fn write_json(self) -> Result<()> {
         let (profile_name, partial) = self.into();
-        let fname = profile_path(&profile_name);
-        let file = File::open(&fname).expect(&format!("Error writing to file: {fname}"));
+        let path = profile_path(&profile_name);
+        let file = File::open(&path)
+            .map_err(|cause| Error::Io { path, cause })?;
         let writer = BufWriter::new(file);
 
         serde_json::to_writer(writer, &partial)
+            .map_err(Error::Serde)
     }
 }
 

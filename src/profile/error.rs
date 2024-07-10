@@ -9,5 +9,7 @@ pub enum Error {
         path: String,
         #[source]
         cause: io::Error,
-    }
+    },
+    #[error("Serde error: {0}")]
+    Serde(#[from] serde_json::Error),
 }
