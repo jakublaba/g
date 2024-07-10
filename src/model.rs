@@ -31,7 +31,7 @@ struct PartialProfile {
 
 // TODO - handle overriding existing profiles
 impl Profile {
-    pub fn from_json(profile_name: String) -> Result<Self, serde_json::Error> {
+    pub fn read_json(profile_name: String) -> Result<Self, serde_json::Error> {
         let fname = profile_path(&profile_name);
         let file = File::open(&fname).expect(&format!("Error opening file: {fname}"));
         let reader = BufReader::new(file);
@@ -41,7 +41,7 @@ impl Profile {
         Ok(Self::from_partial(profile_name, partial))
     }
 
-    pub fn to_json(self) -> Result<(), serde_json::Error> {
+    pub fn write_json(self) -> Result<(), serde_json::Error> {
         let (profile_name, partial) = self.to_partial();
         let fname = profile_path(&profile_name);
         let file = File::open(&fname).expect(&format!("Error writing to file: {fname}"));
@@ -50,6 +50,7 @@ impl Profile {
         serde_json::to_writer(writer, &partial)
     }
 
+    // TODO replace this with From impl
     fn from_partial(name: String, partial: PartialProfile) -> Self {
         Self {
             name,
@@ -58,6 +59,7 @@ impl Profile {
         }
     }
 
+    // TODO replace this with Into impl
     fn to_partial(self) -> (String, PartialProfile) {
         (
             self.name,
