@@ -4,7 +4,7 @@ use clap::Parser;
 use serde::ser::Error;
 
 use crate::model::Profile;
-use crate::ssh::key::{ge, generate_pair, randomart, write_private_key, write_public_key}
+use crate::ssh::key::{generate_pair, randomart, write_private_key, write_public_key};
 
 mod cli;
 mod model;
