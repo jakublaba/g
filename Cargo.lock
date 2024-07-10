@@ -398,6 +398,7 @@ dependencies = [
  "shellexpand",
  "ssh-agent-client-rs",
  "ssh-key",
+ "thiserror",
 ]
 
 [[package]]

@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fmt::Display;
 use std::path::Path;
 
@@ -6,14 +5,14 @@ use git2::{Cred, FetchOptions, RemoteCallbacks, Repository};
 use git2::build::RepoBuilder;
 use regex::Regex;
 
-use crate::git::error::GitError;
+use crate::git::error::Error;
 
 pub mod error;
 
 const GITHUB: &str = "git@github.com";
 const URL_REGEX: &str = r"git@github\.com-?.*:.+\/(?<repo>.+)\.git";
 
-pub type Result<T> = std::result::Result<T, GitError>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 // TODO for now idk if the Repository return type is useful or not
 // TODO resolve cloning skill issue
@@ -21,10 +20,7 @@ pub fn clone(profile_name: &str, url: &str) -> Result<Repository> {
     let (substituted_url, repo) = parse_url(profile_name, url)?;
     repo_builder(profile_name)
         .clone(&substituted_url, Path::new(&repo))
-        .map_err(|e| {
-            let msg = format!("Error cloning repository: {url}");
-            GitError::from((msg, e))
-        })
+        .map_err(Error::Clone)
 }
 
 fn parse_url(profile_name: &str, url: &str) -> Result<(String, String)> {
@@ -33,9 +29,9 @@ fn parse_url(profile_name: &str, url: &str) -> Result<(String, String)> {
     let regex = Regex::new(URL_REGEX).unwrap();
     let profile_url = regex.replace(url, replacement);
     let repo = regex.captures(url)
-        .ok_or(GitError::from(format!("Invalid git url: {url}")))?
+        .ok_or(Error::InvalidUrl(String::from(url)))?
         .name("repo")
-        .ok_or(GitError::from(format!("Can't extract repository name from url: {url}")))?
+        .ok_or(Error::CantExtractRepo(String::from(url)))?
         .as_str();
 
     Ok((String::from(profile_url), String::from(repo)))

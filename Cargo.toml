@@ -13,3 +13,4 @@ shellexpand = "3.1.0"
 ssh-key = { version = "0.6.6", features = ["ed25519", "std", "alloc"] }
 regex = "1.10.5"
 ssh-agent-client-rs = "0.9.1"
+thiserror = "1.0.61"
