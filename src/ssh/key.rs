@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use rand::thread_rng;
-use ssh_key::{HashAlg, PrivateKey, PublicKey};
+use ssh_key::{HashAlg, LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::Ed25519Keypair;
 
 use crate::ssh::{Result, SshError};
@@ -27,7 +27,7 @@ pub fn randomart(key: &PrivateKey) -> String {
 
 pub fn write_private_key(profile_name: &str, key: &PrivateKey) -> Result<()> {
     let path = private_key_path(profile_name);
-    key.write_openssh_file(Path::new(&path))
+    key.write_openssh_file(Path::new(&path), LineEnding::LF)
         .map_err(|_| SshError::from(format!("Error writing private key: {path}")))
 }
 
