@@ -2,10 +2,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("Can't clone repository: {0:?}")]
-    Clone(git2::Error),
-    #[error("Invalid url: {0}")]
-    InvalidUrl(String),
-    #[error("Can't extract repository name from url: {0}")]
-    CantExtractRepo(String),
+    #[error("Git error: {0}")]
+    Git(#[from] git2::Error),
+    #[error("Bad url: {0}")]
+    Url(String),
 }

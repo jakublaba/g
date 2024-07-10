@@ -4,6 +4,8 @@ use std::path::Path;
 use git2::{Cred, FetchOptions, RemoteCallbacks, Repository};
 use git2::build::RepoBuilder;
 use regex::Regex;
+use serde::de::IntoDeserializer;
+use serde_json::value::Index;
 
 use crate::git::error::Error;
 
@@ -20,7 +22,7 @@ pub fn clone(profile_name: &str, url: &str) -> Result<Repository> {
     let (substituted_url, repo) = parse_url(profile_name, url)?;
     repo_builder(profile_name)
         .clone(&substituted_url, Path::new(&repo))
-        .map_err(Error::Clone)
+        .map_err(Error::Git)
 }
 
 fn parse_url(profile_name: &str, url: &str) -> Result<(String, String)> {
@@ -29,12 +31,12 @@ fn parse_url(profile_name: &str, url: &str) -> Result<(String, String)> {
     let regex = Regex::new(URL_REGEX).unwrap();
     let profile_url = regex.replace(url, replacement);
     let repo = regex.captures(url)
-        .ok_or(Error::InvalidUrl(String::from(url)))?
+        .ok_or(Error::Url(url.into()))?
         .name("repo")
-        .ok_or(Error::CantExtractRepo(String::from(url)))?
+        .ok_or(Error::Url(url.into()))?
         .as_str();
 
-    Ok((String::from(profile_url), String::from(repo)))
+    Ok((profile_url.into(), repo.into()))
 }
 
 fn repo_builder(profile_name: &str) -> RepoBuilder {
