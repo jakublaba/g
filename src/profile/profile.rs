@@ -10,8 +10,8 @@ const HOME: &str = env!("HOME");
 const PROFILES_DIR: &str = ".config/git-multiaccount-profiles";
 
 fn profile_path(profile: &str) -> String {
-    let prof_dir = format!("{HOME}/{PROFILES_DIR}");
-    format!("{prof_dir}/{profile}.json")
+    let profiles_dir = format!("{HOME}/{PROFILES_DIR}");
+    format!("{profiles_dir}/{profile}.json")
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -31,42 +31,44 @@ struct PartialProfile {
 
 // TODO - handle overriding existing profiles
 impl Profile {
-    pub fn read_json(profile_name: String) -> Result<Self, serde_json::Error> {
-        let fname = profile_path(&profile_name);
+    pub fn read_json(profile_name: &str) -> Result<Self, serde_json::Error> {
+        let fname = profile_path(profile_name);
         let file = File::open(&fname).expect(&format!("Error opening file: {fname}"));
         let reader = BufReader::new(file);
 
         let partial: PartialProfile = serde_json::from_reader(reader)?;
 
-        Ok(Self::from_partial(profile_name, partial))
+        Ok((profile_name, partial).into())
     }
 
     pub fn write_json(self) -> Result<(), serde_json::Error> {
-        let (profile_name, partial) = self.to_partial();
+        let (profile_name, partial) = self.into();
         let fname = profile_path(&profile_name);
         let file = File::open(&fname).expect(&format!("Error writing to file: {fname}"));
         let writer = BufWriter::new(file);
 
         serde_json::to_writer(writer, &partial)
     }
+}
 
-    // TODO replace this with From impl
-    fn from_partial(name: String, partial: PartialProfile) -> Self {
+impl From<(&str, PartialProfile)> for Profile {
+    fn from(args: (&str, PartialProfile)) -> Self {
+        let (name, partial) = args;
         Self {
-            name,
+            name: String::from(name),
             user_name: partial.user_name,
             user_email: partial.user_email,
         }
     }
+}
 
-    // TODO replace this with Into impl
-    fn to_partial(self) -> (String, PartialProfile) {
-        (
-            self.name,
-            PartialProfile {
-                user_name: self.user_name,
-                user_email: self.user_email,
-            },
-        )
+impl Into<(String, PartialProfile)> for Profile {
+    fn into(self) -> (String, PartialProfile) {
+        let partial = PartialProfile {
+            user_name: self.user_name,
+            user_email: self.user_email,
+        };
+
+        (self.name, partial)
     }
 }

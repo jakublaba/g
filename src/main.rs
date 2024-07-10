@@ -1,13 +1,13 @@
 use clap::Parser;
 use serde::ser::Error;
 
-use crate::model::Profile;
+use crate::profile::profile::Profile;
 use crate::ssh::key::{generate_pair, randomart, write_private_key, write_public_key};
 
 mod cli;
-mod model;
 mod ssh;
 mod git;
+mod profile;
 
 // TODO (globally) improve error handling to also pass the underlying error messages
 fn main() {
