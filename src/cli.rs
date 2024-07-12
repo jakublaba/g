@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use crate::model::Profile;
+use crate::profile::profile::Profile;
 
 #[derive(Parser, Debug)]
 pub struct Cli {
@@ -13,13 +13,18 @@ pub enum Cmd {
     /// Switch profiles
     Su {
         /// Name of the profile
-        #[arg(value_parser = |name: &str| Profile::from_json(String::from(name)))]
+        #[arg(value_parser = | name: & str | Profile::read_json(name))]
         profile: Profile,
     },
     /// Manage profiles
     Profile {
         #[clap(subcommand)]
         command: Option<ProfileCmd>,
+    },
+    /// Clone a git repository
+    Clone {
+        #[arg(value_parser)]
+        url: String
     },
 }
 

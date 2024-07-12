@@ -4,9 +4,11 @@ use rand::thread_rng;
 use ssh_key::{HashAlg, LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::Ed25519Keypair;
 
-use crate::ssh::{Result, SshError};
+use crate::ssh::error::Error;
+use crate::ssh::Result;
 
-const SSH_DIR: &str = "~/.ssh";
+const HOME: &str = env!("HOME");
+const SSH_DIR: &str = ".ssh";
 const ED25519: &str = "ED25519";
 
 pub fn generate_pair(user_email: &str) -> (PrivateKey, PublicKey) {
@@ -26,23 +28,23 @@ pub fn randomart(key: &PrivateKey) -> String {
 }
 
 pub fn write_private_key(profile_name: &str, key: &PrivateKey) -> Result<()> {
-    let path = private_key_path(profile_name);
-    key.write_openssh_file(Path::new(&path), LineEnding::LF)
-        .map_err(|_| SshError::from(format!("Error writing private key: {path}")))
+    let key_path = private_key_path(profile_name);
+    key.write_openssh_file(Path::new(&key_path), LineEnding::LF)
+        .map_err(|cause| Error::WriteKey { key_path, cause })
 }
 
 pub fn write_public_key(profile_name: &str, key: &PublicKey) -> Result<()> {
-    let path = public_key_path(profile_name);
-    key.write_openssh_file(Path::new(&path))
-        .map_err(|_| SshError::from(format!("Error writing public key: {path}")))
+    let key_path = public_key_path(profile_name);
+    key.write_openssh_file(Path::new(&key_path))
+        .map_err(|cause| Error::WriteKey { key_path, cause })
 }
 
 fn private_key_path(profile_name: &str) -> String {
-    let ssh_dir = shellexpand::tilde(SSH_DIR);
+    let ssh_dir = format!("{HOME}/{SSH_DIR}");
     format!("{ssh_dir}/id_{profile_name}")
 }
 
 fn public_key_path(profile_name: &str) -> String {
-    let ssh_dir = shellexpand::tilde(SSH_DIR);
+    let ssh_dir = format!("{HOME}/{SSH_DIR}");
     format!("{ssh_dir}/id_{profile_name}.pub")
 }
