@@ -11,32 +11,17 @@ use crate::git::error::Error;
 
 pub mod error;
 
-const GITHUB: &str = "git@github.com";
-const URL_REGEX: &str = r"git@github\.com-?.*:.+\/(?<repo>.+)\.git";
+const URL_REGEX: &str = r"git@github\.com:.+\/(?<repo>.+)\.git";
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 // TODO for now idk if the Repository return type is useful or not
 // TODO resolve cloning skill issue
 pub fn clone(profile_name: &str, url: &str) -> Result<Repository> {
-    let (substituted_url, repo) = parse_url(profile_name, url)?;
+    let repo_name = parse_repo_name(url)?;
     repo_builder(profile_name)
-        .clone(&substituted_url, Path::new(&repo))
+        .clone(url, Path::new(&repo_name))
         .map_err(Error::Git)
-}
-
-fn parse_url(profile_name: &str, url: &str) -> Result<(String, String)> {
-    let replacement = format!("{GITHUB}-{profile_name}:${{repo}}");
-    // this only fails if you provide shitty regex, it should never happen and user shouldn't know
-    let regex = Regex::new(URL_REGEX).unwrap();
-    let profile_url = regex.replace(url, replacement);
-    let repo = regex.captures(url)
-        .ok_or(Error::Url(url.into()))?
-        .name("repo")
-        .ok_or(Error::Url(url.into()))?
-        .as_str();
-
-    Ok((profile_url.into(), repo.into()))
 }
 
 fn repo_builder(profile_name: &str) -> RepoBuilder {
@@ -48,4 +33,13 @@ fn repo_builder(profile_name: &str) -> RepoBuilder {
     repo_builder.fetch_options(fetch_options);
 
     repo_builder
+}
+
+fn parse_repo_name(url: &str) -> Result<String> {
+    let regex = Regex::new(URL_REGEX).unwrap();
+    regex.captures(url)
+        .ok_or(Error::Url(url.into()))?
+        .name("repo")
+        .ok_or(Error::Url(url.into()))
+        .map(|m| m.as_str().into())
 }

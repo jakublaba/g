@@ -2,7 +2,6 @@ use std::fmt::Display;
 
 use crate::ssh::error::Error;
 
-pub mod config;
 pub mod key;
 pub mod client;
 pub mod error;
