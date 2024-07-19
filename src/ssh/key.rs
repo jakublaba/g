@@ -11,6 +11,7 @@ const HOME: &str = env!("HOME");
 const SSH_DIR: &str = ".ssh";
 const ED25519: &str = "ED25519";
 
+// TODO add support for keys with passphrase
 pub fn generate_pair(user_email: &str) -> (PrivateKey, PublicKey) {
     // TODO review whether thread_rng is cryptographically secure
     let mut rng = thread_rng();
@@ -39,12 +40,12 @@ pub fn write_public_key(profile_name: &str, key: &PublicKey) -> Result<()> {
         .map_err(|cause| Error::WriteKey { key_path, cause })
 }
 
-fn private_key_path(profile_name: &str) -> String {
+pub fn private_key_path(profile_name: &str) -> String {
     let ssh_dir = format!("{HOME}/{SSH_DIR}");
     format!("{ssh_dir}/id_{profile_name}")
 }
 
-fn public_key_path(profile_name: &str) -> String {
+pub fn public_key_path(profile_name: &str) -> String {
     let ssh_dir = format!("{HOME}/{SSH_DIR}");
     format!("{ssh_dir}/id_{profile_name}.pub")
 }
