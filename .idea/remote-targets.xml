@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteTargetsManager">
+    <targets>
+      <target name="WSL - Ubuntu" type="wsl" uuid="bc2d3a91-d911-45fb-a258-6efef430810a">
+        <config>
+          <option name="distributionMsId" value="Ubuntu" />
+          <option name="projectRootOnTarget" value="{exitCode=0, timeout=false, cancelled=false, stdout=/tmp/tmp.fBKyMRbyxZ&#10;, stderr=}/git-multiaccount" />
+        </config>
+        <ContributedStateBase type="RsLanguageRuntime">
+          <config>
+            <option name="cargoPath" value="/home/kuba/.cargo/bin/cargo" />
+            <option name="cargoVersion" value="1.79.0 (ffa9cf99a 2024-06-03)" />
+            <option name="rustcPath" value="/home/kuba/.cargo/bin/rustc" />
+          </config>
+        </ContributedStateBase>
+      </target>
+    </targets>
+  </component>
+</project>
