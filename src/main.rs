@@ -1,13 +1,11 @@
-use std::fs;
 use std::path::Path;
 
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::git::clone;
-use crate::profile::generate_profile;
+use crate::profile::{generate_profile, remove_profile};
 use crate::profile::profile::{Profile, profile_path};
-use crate::ssh::key::{private_key_path, public_key_path};
 
 mod cli;
 mod ssh;
@@ -31,13 +29,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             generate_profile(profile);
                         }
                         ProfileCmd::Remove { profile } => {
-                            let path = profile_path(&profile);
-                            fs::remove_file(path)?;
-                            let private_key_path = private_key_path(&profile);
-                            let public_key_path = public_key_path(&profile);
-                            fs::remove_file(private_key_path)?;
-                            fs::remove_file(public_key_path)?;
-                            println!("Removed profile '{profile}' and associated ssh keys");
+                            remove_profile(&profile);
                         }
                         ProfileCmd::Edit { name, user_name, user_email } => {
                             let path = profile_path(&name);
