@@ -13,7 +13,6 @@ mod profile;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
-    // TODO code inside this match is too big, extract things to functions
     if let Some(cmd) = cli.command {
         match cmd {
             Cmd::Su { profile } => {
