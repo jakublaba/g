@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use rand::thread_rng;
-use ssh_key::{HashAlg, LineEnding, PrivateKey, PublicKey};
+use ssh_key::{LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::Ed25519Keypair;
 
 use crate::ssh::error::Error;
@@ -9,7 +9,7 @@ use crate::ssh::Result;
 
 const HOME: &str = env!("HOME");
 const SSH_DIR: &str = ".ssh";
-const ED25519: &str = "ED25519";
+pub const ED25519: &str = "ED25519";
 
 // TODO add support for keys with passphrase
 pub fn generate_pair(user_email: &str) -> (PrivateKey, PublicKey) {
@@ -21,11 +21,6 @@ pub fn generate_pair(user_email: &str) -> (PrivateKey, PublicKey) {
     public.set_comment(user_email);
 
     (private, public)
-}
-
-pub fn randomart(key: &PrivateKey) -> String {
-    let fingerprint = key.fingerprint(HashAlg::Sha256);
-    fingerprint.to_randomart(ED25519)
 }
 
 pub fn write_private_key(profile_name: &str, key: &PrivateKey) -> Result<()> {
