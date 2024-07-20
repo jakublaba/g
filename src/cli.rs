@@ -23,7 +23,7 @@ pub enum Cmd {
     },
     /// Clone a git repository
     Clone {
-        /// Name of profile to use for authorization for cloning
+        /// Name of profile to use for authorization
         #[arg(value_parser)]
         profile: String,
         /// Url of the remote repository
@@ -34,6 +34,7 @@ pub enum Cmd {
 
 #[derive(Subcommand, Debug)]
 pub enum ProfileCmd {
+    // TODO now it overrides existing profiles, make it warn in such case and add --force flag
     /// Add a new profile
     Add {
         /// Name of the profile

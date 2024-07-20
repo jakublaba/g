@@ -12,7 +12,11 @@ mod ssh;
 mod git;
 mod profile;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
+    run().unwrap();
+}
+
+fn run() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
     println!("{:#?}", cli);
 
@@ -40,6 +44,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             profile.name = name;
                             if let Some(usr_name) = user_name { profile.user_name = usr_name };
                             if let Some(usr_email) = user_email { profile.user_email = usr_email };
+                            profile.write_json()?;
                         }
                     }
                 }
