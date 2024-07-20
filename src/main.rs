@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
-use crate::git::clone;
+use crate::git::{clone, configure_user};
 use crate::profile::{edit_profile, generate_profile, remove_profile};
 use crate::profile::profile::Profile;
 
@@ -10,13 +10,14 @@ mod ssh;
 mod git;
 mod profile;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+// TODO fix error handling
+fn main() {
     let cli = Cli::parse();
 
     if let Some(cmd) = cli.command {
         match cmd {
             Cmd::Su { profile } => {
-                git::configure_user(&profile)?;
+                if let Err(e) = configure_user(&profile) { panic!("{}", e.to_string()) }
             }
             Cmd::Profile { command } => {
                 if let Some(prof_cmd) = command {
@@ -35,10 +36,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             Cmd::Clone { profile, url } => {
-                clone(&profile, &url)?;
+                if let Err(e) = clone(&profile, &url) { panic!("{}", e.to_string()) }
             }
         }
     };
-
-    Ok(())
 }
