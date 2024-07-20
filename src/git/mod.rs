@@ -37,7 +37,7 @@ fn open_current_repo_config() -> Result<Config> {
         .map_err(Error::Config)
 }
 
-// TODO for now idk if the Repository return type is useful or not
+// TODO Repository return type can be used to configure pre-push hook for auth right away
 pub fn clone(profile_name: &str, url: &str) -> Result<Repository> {
     let repo_name = parse_repo_name(url)?;
     repo_builder(profile_name)
