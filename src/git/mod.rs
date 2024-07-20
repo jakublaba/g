@@ -1,3 +1,4 @@
+use std::env;
 use std::fmt::Display;
 use std::path::Path;
 
@@ -8,6 +9,7 @@ use serde::de::IntoDeserializer;
 use serde_json::value::Index;
 
 use crate::git::error::Error;
+use crate::profile::profile::Profile;
 use crate::ssh::key::{private_key_path, public_key_path};
 
 pub mod error;
@@ -15,6 +17,21 @@ pub mod error;
 const URL_REGEX: &str = r"git@github\.com:.+\/(?<repo>.+)\.git";
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+pub fn configure_user(profile: &Profile) -> Result<()> {
+    let current_dir = env::current_dir()
+        .map_err(Error::Io)?;
+    let mut config = Repository::open(current_dir)
+        .map_err(Error::Repo)?
+        .config()
+        .map_err(Error::Config)?;
+    config.set_str("user.name", &profile.user_name)
+        .map_err(Error::Config)?;
+    config.set_str("user.email", &profile.user_email)
+        .map_err(Error::Config)?;
+
+    Ok(())
+}
 
 // TODO for now idk if the Repository return type is useful or not
 pub fn clone(profile_name: &str, url: &str) -> Result<Repository> {
