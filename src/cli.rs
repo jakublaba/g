@@ -24,7 +24,9 @@ pub enum Cmd {
     /// Clone a git repository
     Clone {
         #[arg(value_parser)]
-        url: String
+        profile: String,
+        #[arg(value_parser)]
+        url: String,
     },
 }
 

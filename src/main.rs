@@ -4,6 +4,7 @@ use std::path::Path;
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
+use crate::git::clone;
 use crate::profile::profile::{Profile, profile_path};
 
 mod cli;
@@ -31,7 +32,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             fs::remove_file(path)?;
                         }
                         ProfileCmd::Edit { name, user_name, user_email } => {
-                            if !Path::new(&profile_path(&name)).exists() {
+                            let path = profile_path(&name);
+                            if !Path::new(&path).exists() {
                                 panic!("Can't open profile: {path}")
                             }
                             let mut profile = Profile::read_json(&name)?;
@@ -42,7 +44,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
             }
-            Cmd::Clone { url } => {}
+            Cmd::Clone { profile, url } => {
+                clone(&profile, &url)?;
+            }
         }
     };
 
