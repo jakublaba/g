@@ -1,11 +1,9 @@
-use std::path::Path;
-
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::git::clone;
-use crate::profile::{generate_profile, remove_profile};
-use crate::profile::profile::{Profile, profile_path};
+use crate::profile::{edit_profile, generate_profile, remove_profile};
+use crate::profile::profile::Profile;
 
 mod cli;
 mod ssh;
@@ -29,18 +27,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             generate_profile(profile);
                         }
                         ProfileCmd::Remove { profile } => {
-                            remove_profile(&profile);
+                            remove_profile(&profile)
                         }
                         ProfileCmd::Edit { name, user_name, user_email } => {
-                            let path = profile_path(&name);
-                            if !Path::new(&path).exists() {
-                                panic!("Can't open profile: {path}")
-                            }
-                            let mut profile = Profile::read_json(&name)?;
-                            profile.name = name;
-                            if let Some(usr_name) = user_name { profile.user_name = usr_name };
-                            if let Some(usr_email) = user_email { profile.user_email = usr_email };
-                            profile.write_json()?;
+                            edit_profile(name, user_name, user_email)
                         }
                     }
                 }

@@ -34,6 +34,21 @@ pub fn remove_profile(profile_name: &str) {
     rm_file(public_key_path(profile_name));
 }
 
+pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<String>) {
+    let path = profile_path(&name);
+    if !Path::new(&path).exists() {
+        panic!("Can't open {path}");
+    }
+    match Profile::read_json(&name) {
+        Ok(mut profile) => {
+            profile.name = name;
+            if let Some(usr_name) = user_name { profile.user_name = usr_name };
+            if let Some(usr_email) = user_email { profile.user_email = usr_email };
+        }
+        Err(e) => { panic!("{}", e.to_string()) }
+    }
+}
+
 fn rm_file<P: AsRef<Path> + Display>(path: P) {
     println!("Removing {path}");
     if let Err(_) = fs::remove_file(&path) {
