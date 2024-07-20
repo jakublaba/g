@@ -12,11 +12,7 @@ mod ssh;
 mod git;
 mod profile;
 
-fn main() {
-    run().unwrap();
-}
-
-fn run() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
     println!("{:#?}", cli);
 
