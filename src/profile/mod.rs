@@ -12,7 +12,7 @@ use crate::ssh::key::{ED25519, generate_pair, private_key_path, public_key_path,
 pub mod profile;
 pub mod error;
 
-const PROFILE_REGEX: &str = r"git-multiaccount-profiles/(?<prof>.+)\.json";
+const PROFILE_REGEX: &str = r"g-profiles/(?<prof>.+)\.json";
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub fn list_profiles() {

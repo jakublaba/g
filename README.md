@@ -27,7 +27,7 @@ Commands:
 
 # How does it work?
 
-g stores your profiles as `.json` files in `~/.config/gma-profiles/`, containing the following data:
+g stores your profiles as `.json` files in `~/.config/g-profiles/`, containing the following data:
 
 ```json
 {
