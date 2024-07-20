@@ -11,9 +11,9 @@ use crate::profile::Result;
 const HOME: &str = env!("HOME");
 const PROFILES_DIR: &str = ".config/git-multiaccount-profiles";
 
-fn profile_path(profile: &str) -> String {
+pub fn profile_path(profile_name: &str) -> String {
     let profiles_dir = format!("{HOME}/{PROFILES_DIR}");
-    format!("{profiles_dir}/{profile}.json")
+    format!("{profiles_dir}/{profile_name}.json")
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -33,6 +33,10 @@ struct PartialProfile {
 
 // TODO - handle overriding existing profiles
 impl Profile {
+    pub fn new(name: String, user_name: String, user_email: String) -> Self {
+        Self { name, user_name, user_email }
+    }
+
     pub fn read_json(profile_name: &str) -> Result<Self> {
         let path = profile_path(profile_name);
         let file = File::open(&path)
