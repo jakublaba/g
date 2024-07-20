@@ -1,69 +1,43 @@
-use std::fs;
-use std::path::Path;
-
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
-use crate::git::clone;
-use crate::profile::profile::{Profile, profile_path};
-use crate::ssh::key::{generate_pair, private_key_path, public_key_path, randomart, write_private_key, write_public_key};
+use crate::git::{clone, configure_user};
+use crate::profile::{edit_profile, generate_profile, remove_profile};
+use crate::profile::profile::Profile;
 
 mod cli;
 mod ssh;
 mod git;
 mod profile;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+// TODO fix error handling
+fn main() {
     let cli = Cli::parse();
 
-    // TODO code inside this match is too big, extract things to functions
     if let Some(cmd) = cli.command {
         match cmd {
             Cmd::Su { profile } => {
-                git::configure_user(&profile)?;
+                if let Err(e) = configure_user(&profile) { panic!("{}", e.to_string()) }
             }
             Cmd::Profile { command } => {
                 if let Some(prof_cmd) = command {
                     match prof_cmd {
                         ProfileCmd::Add { name, user_name, user_email } => {
                             let profile = Profile::new(name, user_name, user_email);
-                            println!("Generating a new ssh-ed25519 key pair");
-                            let (private, public) = generate_pair(&profile.user_email);
-                            write_private_key(&profile.name, &private)?;
-                            write_public_key(&profile.name, &public)?;
-                            let randomart = randomart(&private);
-                            println!("Key pair written, private key fingerprint randomart:\n{randomart}");
-                            profile.write_json()?;
-                            println!("Profile written");
+                            generate_profile(profile);
                         }
                         ProfileCmd::Remove { profile } => {
-                            let path = profile_path(&profile);
-                            fs::remove_file(path)?;
-                            let private_key_path = private_key_path(&profile);
-                            let public_key_path = public_key_path(&profile);
-                            fs::remove_file(private_key_path)?;
-                            fs::remove_file(public_key_path)?;
-                            println!("Removed profile '{profile}' and associated ssh keys");
+                            remove_profile(&profile)
                         }
                         ProfileCmd::Edit { name, user_name, user_email } => {
-                            let path = profile_path(&name);
-                            if !Path::new(&path).exists() {
-                                panic!("Can't open profile: {path}")
-                            }
-                            let mut profile = Profile::read_json(&name)?;
-                            profile.name = name;
-                            if let Some(usr_name) = user_name { profile.user_name = usr_name };
-                            if let Some(usr_email) = user_email { profile.user_email = usr_email };
-                            profile.write_json()?;
+                            edit_profile(name, user_name, user_email)
                         }
                     }
                 }
             }
             Cmd::Clone { profile, url } => {
-                clone(&profile, &url)?;
+                if let Err(e) = clone(&profile, &url) { panic!("{}", e.to_string()) }
             }
         }
     };
-
-    Ok(())
 }
