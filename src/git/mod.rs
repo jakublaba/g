@@ -2,7 +2,7 @@ use std::env;
 use std::fmt::Display;
 use std::path::Path;
 
-use git2::{Cred, FetchOptions, RemoteCallbacks, Repository};
+use git2::{Config, Cred, FetchOptions, RemoteCallbacks, Repository};
 use git2::build::RepoBuilder;
 use regex::Regex;
 use serde::de::IntoDeserializer;
@@ -19,18 +19,22 @@ const URL_REGEX: &str = r"git@github\.com:.+\/(?<repo>.+)\.git";
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub fn configure_user(profile: &Profile) -> Result<()> {
-    let current_dir = env::current_dir()
-        .map_err(Error::Io)?;
-    let mut config = Repository::open(current_dir)
-        .map_err(Error::Repo)?
-        .config()
-        .map_err(Error::Config)?;
+    let mut config = open_current_repo_config()?;
     config.set_str("user.name", &profile.user_name)
         .map_err(Error::Config)?;
     config.set_str("user.email", &profile.user_email)
         .map_err(Error::Config)?;
 
     Ok(())
+}
+
+fn open_current_repo_config() -> Result<Config> {
+    let current_dir = env::current_dir()
+        .map_err(Error::Io)?;
+    Repository::open(current_dir)
+        .map_err(Error::Repo)?
+        .config()
+        .map_err(Error::Config)
 }
 
 // TODO for now idk if the Repository return type is useful or not
