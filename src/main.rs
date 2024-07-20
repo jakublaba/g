@@ -2,7 +2,7 @@ use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::git::{clone, configure_user};
-use crate::profile::{edit_profile, generate_profile, remove_profile};
+use crate::profile::{edit_profile, generate_profile, list_profiles, remove_profile};
 use crate::profile::profile::Profile;
 
 mod cli;
@@ -22,6 +22,12 @@ fn main() {
             Cmd::Profile { command } => {
                 if let Some(prof_cmd) = command {
                     match prof_cmd {
+                        ProfileCmd::List => {
+                            list_profiles();
+                        }
+                        ProfileCmd::Show { profile } => {
+                            println!("{profile:#?}")
+                        }
                         ProfileCmd::Add { name, user_name, user_email } => {
                             let profile = Profile::new(name, user_name, user_email);
                             generate_profile(profile);

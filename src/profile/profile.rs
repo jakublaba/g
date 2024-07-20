@@ -8,6 +8,10 @@ use crate::profile::Result;
 const HOME: &str = env!("HOME");
 const PROFILES_DIR: &str = ".config/git-multiaccount-profiles";
 
+pub fn profiles_dir() -> String {
+    format!("{HOME}/{PROFILES_DIR}")
+}
+
 pub fn profile_path(profile_name: &str) -> String {
     let profiles_dir = format!("{HOME}/{PROFILES_DIR}");
     format!("{profiles_dir}/{profile_name}.json")
