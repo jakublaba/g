@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/git-multiaccount.iml" filepath="$PROJECT_DIR$/.idea/git-multiaccount.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/g.iml" filepath="$PROJECT_DIR$/.idea/g.iml" />
     </modules>
   </component>
 </project>
