@@ -343,6 +343,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "g"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "git2",
+ "rand",
+ "regex",
+ "serde",
+ "serde_json",
+ "ssh-agent-client-rs",
+ "ssh-key",
+ "thiserror",
+]
+
+[[package]]
 name = "generic-array"
 version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -362,21 +377,6 @@ dependencies = [
  "cfg-if",
  "libc",
  "wasi",
-]
-
-[[package]]
-name = "git-multiaccount"
-version = "0.1.0"
-dependencies = [
- "clap",
- "git2",
- "rand",
- "regex",
- "serde",
- "serde_json",
- "ssh-agent-client-rs",
- "ssh-key",
- "thiserror",
 ]
 
 [[package]]
