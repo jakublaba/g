@@ -2,16 +2,36 @@ use std::fmt::Display;
 use std::fs;
 use std::path::Path;
 
+use regex::Regex;
 use ssh_key::HashAlg;
 
 use crate::profile::error::Error;
-use crate::profile::profile::{Profile, profile_path};
+use crate::profile::profile::{Profile, profile_path, profiles_dir};
 use crate::ssh::key::{ED25519, generate_pair, private_key_path, public_key_path, write_private_key, write_public_key};
 
 pub mod profile;
 pub mod error;
 
+const PROFILE_REGEX: &str = r"git-multiaccount-profiles/(?<prof>.+)\.json";
 pub type Result<T> = std::result::Result<T, Error>;
+
+pub fn list_profiles() {
+    let profiles_dir = profiles_dir();
+    let paths = fs::read_dir(&profiles_dir)
+        .expect(&format!("Can't open {profiles_dir}"));
+    for path in paths {
+        let p = path.unwrap();
+        let p_str: String = p.path().to_str().unwrap().into();
+        let regex = Regex::new(PROFILE_REGEX).unwrap();
+        let profile_name: String = regex.captures(&p_str)
+            .expect("path doesn't match regex")
+            .name("prof")
+            .expect("can't extract profile name from path")
+            .as_str()
+            .into();
+        println!("{profile_name}");
+    }
+}
 
 // TODO make this not generate any files if any of the stages fails
 pub fn generate_profile(profile: Profile) {
