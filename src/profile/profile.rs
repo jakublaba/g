@@ -6,7 +6,7 @@ use crate::profile::error::Error;
 use crate::profile::Result;
 
 const HOME: &str = env!("HOME");
-const PROFILES_DIR: &str = ".config/git-multiaccount-profiles";
+const PROFILES_DIR: &str = ".config/g-profiles";
 
 pub fn profiles_dir() -> String {
     format!("{HOME}/{PROFILES_DIR}")
