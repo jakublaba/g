@@ -23,8 +23,10 @@ pub enum Cmd {
     },
     /// Clone a git repository
     Clone {
+        /// Name of profile to use for authorization for cloning
         #[arg(value_parser)]
         profile: String,
+        /// Url of the remote repository
         #[arg(value_parser)]
         url: String,
     },
