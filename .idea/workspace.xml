@@ -9,9 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cddc36fc-5180-4e9d-9a8b-b168f55a3301" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/profile/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/profile/mod.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/profile/profile.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/profile/profile.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/git/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/git/mod.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,9 +22,9 @@
   <component name="MacroExpansionManager">
     <option name="directoryName" value="z5r4m0gr" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="2jVYSh83ZlupFJkVlbzsuPl619R" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -36,7 +34,7 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.rust.reset.selective.auto.import": "true",
-    "git-widget-placeholder": "refactor/project-name",
+    "git-widget-placeholder": "master",
     "nodejs_package_manager_path": "npm",
     "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
     "org.rust.first.attach.projects": "true"
