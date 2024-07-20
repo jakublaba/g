@@ -22,6 +22,8 @@ fn main() {
             Cmd::Profile { command } => {
                 if let Some(prof_cmd) = command {
                     match prof_cmd {
+                        ProfileCmd::List => {}
+                        ProfileCmd::Show { .. } => {}
                         ProfileCmd::Add { name, user_name, user_email } => {
                             let profile = Profile::new(name, user_name, user_email);
                             generate_profile(profile);

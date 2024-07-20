@@ -34,6 +34,14 @@ pub enum Cmd {
 
 #[derive(Subcommand, Debug)]
 pub enum ProfileCmd {
+    /// List existing profiles
+    List,
+    /// Inspect a profile
+    Show {
+        /// Name of the profile
+        #[arg(value_parser = | name: & str | Profile::read_json(name))]
+        profile: Profile,
+    },
     // TODO now it overrides existing profiles, make it warn in such case and add --force flag
     /// Add a new profile
     Add {
