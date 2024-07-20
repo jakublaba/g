@@ -4,7 +4,7 @@
 gma is a cli tool for managing multiple git profiles, basic goal is to have it manage your ssh keys, usernames and emails correctly, in future I'm planning to add gpg key management
 
 # Installation
-TODO after first release
+TODO after first major version release
 
 # Usage
 > Disclaimer: this is just initial design, might change
@@ -12,11 +12,12 @@ TODO after first release
 I don't see much point in explaining each command and subcommand with flags as the help is pretty comprehensive (at least I hope so).
 Here's the overview of top level commands:
 ```
-Usage: gma [COMMAND]
+Usage: git-multiaccount [COMMAND]
 
 Commands:
   su       Switch profiles
   profile  Manage profiles
+  clone    Clone a git repository
   help     Print this message or the help of the given subcommand(s)
 ```
 
