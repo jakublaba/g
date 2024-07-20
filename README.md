@@ -24,9 +24,9 @@ Commands:
 gma stores your profiles as `.json` files in `~/.config/gma-profiles/`, containing the following data:
 ```json
 {
-  "name": [name of the profile],
-  "user_name": [name of git user],
-  "user_email": [email of git user]
+  "name": [name of git user],
+  "email": [email of git user]
 }
 ```
+Name of the profile itself is determined by name of the file, for example `john_smith.json` corresponds to `john_smith` profile.
 Upon creation of profile via gma, such config file is created, there is also `ssh-ed25519` key pair generated (so far `ed25519` is the only supported algorithm).
