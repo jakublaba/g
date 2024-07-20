@@ -5,8 +5,9 @@ use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::git::clone;
+use crate::profile::generate_profile;
 use crate::profile::profile::{Profile, profile_path};
-use crate::ssh::key::{generate_pair, private_key_path, public_key_path, randomart, write_private_key, write_public_key};
+use crate::ssh::key::{private_key_path, public_key_path};
 
 mod cli;
 mod ssh;
@@ -27,14 +28,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     match prof_cmd {
                         ProfileCmd::Add { name, user_name, user_email } => {
                             let profile = Profile::new(name, user_name, user_email);
-                            println!("Generating a new ssh-ed25519 key pair");
-                            let (private, public) = generate_pair(&profile.user_email);
-                            write_private_key(&profile.name, &private)?;
-                            write_public_key(&profile.name, &public)?;
-                            let randomart = randomart(&private);
-                            println!("Key pair written, private key fingerprint randomart:\n{randomart}");
-                            profile.write_json()?;
-                            println!("Profile written");
+                            generate_profile(profile);
                         }
                         ProfileCmd::Remove { profile } => {
                             let path = profile_path(&profile);
