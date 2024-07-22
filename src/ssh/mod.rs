@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use crate::ssh::error::Error;
 
 pub mod key;
