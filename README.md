@@ -1,42 +1,57 @@
 # g
 
-g is a cli tool for managing multiple git profiles, basic goal is to have it manage your ssh keys, usernames and emails
-correctly, in future I'm planning to add gpg key management
-
-# Installation
-
-TODO after first major version release
+Don't you hate it when you're interacting with multiple git accounts, forget about it and end up making commits with
+wrong name? \
+g is here to solve that issue, without cumbersome management of custom hosts in you `~/.ssh/config` and switching your
+credentials manually each time.
 
 # Usage
 
-> Disclaimer: this is just initial design, might change
+## Creating a profile
 
-I don't see much point in explaining each command and subcommand with flags as the help is pretty comprehensive (at
-least I hope so).
-Here's the overview of top level commands:
+To get started, you'll need to create your first profile.
 
 ```
-Usage: git-multiaccount [COMMAND]
-
-Commands:
-  su       Switch profiles
-  profile  Manage profiles
-  clone    Clone a git repository
-  help     Print this message or the help of the given subcommand(s)
+g profile add --name johnsmith --username "John Smith" --email john.smith@example.com
 ```
+
+By default, it looks if the profile file exists - skipping this stage if it doesn't.
+> Warning: Data inside existing profile is not validated against your cli arguments in this case, to edit it you'll need
+> to use `g profile edit`
+
+Then it attempts to generate ssh key pair for this profile - if private key already exists, public key is generated from
+it, otherwise both are generated from scratch.
+
+You can also run this command with `--force` flag to re-generate everything without warning.
+
+## Inspecting your profiles
+
+(TODO add description about `whoami` command once added)
+You can list all existing g profiles with `g profile list` - it'll show you all the names. \
+To specific settings of a profile, use `g profile show <PROFILE_NAME>`.
+
+The core feature of g is quickly jumping between your profiles. You can do it with the `su` command: `g su johnsmith`.
+This configures username, email and ssh key to use for the git repository you are currently in, it fails outside
+repositories unless you
+use `--global` flag, which tells g to modify global git config instead.
+
+Even though `su` is also related to profile management, I've decided to put it as a separate command rather than
+subcommand of `profile`, because of how often it is used.
+
+This is just basic overview of commands, for more info run the built-in `g help`, or help for a specific
+c ommand/subcommand.
 
 # How does it work?
 
-g stores your profiles as `.json` files in `~/.config/g-profiles/`, containing the following data:
+g stores your profiles as `.json` files in `~/.config/g-profiles/`, for example:
 
 ```json
 {
-  "name": "git username",
-  "email": "git email"
+  "name": "John Smith",
+  "email": "john.smith@example.com"
 }
 ```
 
-Name of the profile itself is determined by name of the file, for example `john_smith.json` corresponds to `john_smith`
-profile.
-Upon creation of profile via g, such config file is created, there is also `ssh-ed25519` key pair generated (so
-far `ed25519` is the only supported algorithm).
+This file is always named `<PROFILE_NAME>.json`.
+Ssh keys related to the profile are stored as `~/.ssh/id_<PROFILE_NAME>` and `~/.ssh/id_<PROFILE_NAME>.pub`.
+> Warning: File names matter, if you manually alter them, g won't be able to find them
