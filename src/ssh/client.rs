@@ -7,8 +7,6 @@ use ssh_key::PrivateKey;
 use crate::ssh::error::Error;
 use crate::ssh::Result;
 
-const HOME: &str = env!("HOME");
-
 pub fn add_identity(identity: &PrivateKey) -> Result<()> {
     let ssh_auth_sock = ssh_auth_sock()?;
     ssh_agent()?

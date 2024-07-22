@@ -1,3 +1,4 @@
+use std::env;
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
@@ -46,4 +47,8 @@ fn main() {
             }
         }
     };
+}
+
+pub fn home() -> String {
+    env::var("HOME").unwrap()
 }
