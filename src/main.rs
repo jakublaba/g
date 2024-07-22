@@ -1,4 +1,5 @@
 use std::env;
+
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
@@ -17,8 +18,8 @@ fn main() {
 
     if let Some(cmd) = cli.command {
         match cmd {
-            Cmd::Su { profile } => {
-                if let Err(e) = configure_user(&profile) { panic!("{}", e.to_string()) }
+            Cmd::Su { profile, global } => {
+                if let Err(e) = configure_user(&profile, global) { panic!("{}", e.to_string()) }
             }
             Cmd::Profile { command } => {
                 if let Some(prof_cmd) = command {

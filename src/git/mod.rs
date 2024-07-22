@@ -19,8 +19,12 @@ const URL_REGEX: &str = r"git@github\.com:.+\/(?<repo>.+)\.git";
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-pub fn configure_user(profile: &Profile) -> Result<()> {
-    let mut config = open_current_repo_config()?;
+pub fn configure_user(profile: &Profile, global: bool) -> Result<()> {
+    let mut config = if global {
+        open_global_config()?
+    } else {
+        open_current_repo_config()?
+    };
     config.set_str("user.name", &profile.user_name)
         .map_err(Error::Config)?;
     config.set_str("user.email", &profile.user_email)
@@ -29,6 +33,11 @@ pub fn configure_user(profile: &Profile) -> Result<()> {
         .map_err(Error::Config)?;
 
     Ok(())
+}
+
+fn open_global_config() -> Result<Config> {
+    Config::open_default()
+        .map_err(Error::Config)
 }
 
 fn open_current_repo_config() -> Result<Config> {
