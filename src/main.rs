@@ -3,7 +3,7 @@ use std::env;
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
-use crate::git::{clone, configure_user, who_am_i};
+use crate::git::{configure_user, who_am_i};
 use crate::profile::{edit_profile, generate_profile, list_profiles, remove_profile};
 use crate::profile::profile::Profile;
 
@@ -48,9 +48,6 @@ fn main() {
                         }
                     }
                 }
-            }
-            Cmd::Clone { profile, url } => {
-                if let Err(e) = clone(&profile, &url) { panic!("{}", e.to_string()) }
             }
         }
     };
