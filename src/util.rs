@@ -4,8 +4,8 @@ use std::path::Path;
 
 pub fn rm_file<P: AsRef<Path> + Display>(path: P) {
     if let Err(_) = fs::remove_file(&path) {
-        println!("{path} doesn't exist, skipping");
+        println!("Skipping, file doesn't exist: {path}");
     } else {
-        println!("{path} removed");
+        println!("Removed {path}");
     }
 }

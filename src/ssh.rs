@@ -12,13 +12,14 @@ pub const ED25519: &str = "ED25519";
 pub fn generate_key_pair(profile_name: &str, user_email: &str, force: bool) {
     println!("Generating a new ssh-ed25519 key pair");
     let private_path = private_key_path(profile_name);
-    if !force {
-        if Path::new(&private_path).exists() {
-            println!("Found private key, re-generating public key from it.");
-            regenerate_public_from_private(profile_name, user_email);
-        } else {
-            println!("ssh keys for profile '{profile_name}' already exist, if you want to re-generate them, re-run with --force");
+    let public_path = public_key_path(profile_name);
+    if !force && Path::new(&private_path).exists() {
+        if Path::new(&public_path).exists() {
+            println!("Key pair already exists, re-run with --force if you want to re-generate it");
+            return;
         }
+        println!("Found private key, re-generating public key from it.");
+        regenerate_public_from_private(profile_name, user_email);
         return;
     }
     let (private, public) = generate_pair_from_scratch(&user_email);
