@@ -57,6 +57,9 @@ pub enum ProfileCmd {
         /// Git user email (user.email in gitconfig)
         #[arg(short = 'e', long = "email")]
         user_email: String,
+        /// Override profile if exists
+        #[arg(short, long)]
+        force: bool,
     },
     /// Remove an existing profile
     Remove {
