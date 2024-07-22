@@ -4,13 +4,14 @@ use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::git::{configure_user, who_am_i};
-use crate::profile::{edit_profile, generate_profile, list_profiles, remove_profile};
+use crate::profile::{edit_profile, generate_profile, profile_list, remove_profile};
 use crate::profile::profile::Profile;
 
 mod cli;
 mod ssh;
 mod git;
 mod profile;
+mod util;
 
 // TODO fix error handling
 fn main() {
@@ -29,7 +30,7 @@ fn main() {
                 if let Some(prof_cmd) = command {
                     match prof_cmd {
                         ProfileCmd::List => {
-                            for profile in list_profiles() {
+                            for profile in profile_list() {
                                 println!("{profile}");
                             }
                         }

@@ -7,13 +7,13 @@ use regex::Regex;
 use ssh_key::HashAlg;
 
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
-use crate::ssh::key::{ED25519, generate_pair, private_key_path, public_key_path, regenerate_public_from_private, write_private_key, write_public_key};
+use crate::ssh::{ED25519, generate_pair, private_key_path, public_key_path, regenerate_public_from_private, write_private_key, write_public_key};
+use crate::util::rm_file;
 
 pub mod profile;
-
 const PROFILE_REGEX: &str = r"g-profiles/(?<prof>.+)\.json";
 
-pub fn list_profiles() -> Vec<String> {
+pub fn profile_list() -> Vec<String> {
     let profiles_dir = profiles_dir();
     let paths = fs::read_dir(&profiles_dir);
     let regex = Regex::new(PROFILE_REGEX).unwrap();
@@ -88,15 +88,5 @@ pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<
             if let Some(usr_email) = user_email { profile.user_email = usr_email };
         }
         Err(e) => { panic!("{}", e.to_string()) }
-    }
-}
-
-// TODO this should be moved to some util module
-fn rm_file<P: AsRef<Path> + Display>(path: P) {
-    println!("Removing {path}");
-    if let Err(_) = fs::remove_file(&path) {
-        println!("{path} doesn't exist, skipping");
-    } else {
-        println!("{path} removed");
     }
 }
