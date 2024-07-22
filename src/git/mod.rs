@@ -17,11 +17,15 @@ const URL_REGEX: &str = r"git@github\.com:.+\/(?<repo>.+)\.git";
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub fn configure_user(profile: &Profile, global: bool) -> Result<()> {
-    let mut config = if global {
-        open_global_config()?
+    let is_inside_git_repo = is_inside_git_repo();
+    if !is_inside_git_repo && !global {
+        println!("No git repository detected, setting profile in global config");
+    }
+    let mut config = if !is_inside_git_repo || global {
+        open_global_config()
     } else {
-        open_current_repo_config()?
-    };
+        open_local_config()
+    }?;
     config.set_str("user.name", &profile.user_name)
         .map_err(Error::Config)?;
     config.set_str("user.email", &profile.user_email)
@@ -32,12 +36,20 @@ pub fn configure_user(profile: &Profile, global: bool) -> Result<()> {
     Ok(())
 }
 
+fn is_inside_git_repo() -> bool {
+    let current_dir = env::current_dir().unwrap();
+    let path_str = format!("{}/.git", current_dir.to_str().unwrap());
+    let path = Path::new(&path_str);
+
+    path.exists() && path.is_dir()
+}
+
 fn open_global_config() -> Result<Config> {
     Config::open_default()
         .map_err(Error::Config)
 }
 
-fn open_current_repo_config() -> Result<Config> {
+fn open_local_config() -> Result<Config> {
     let current_dir = env::current_dir()
         .map_err(Error::Io)?;
     Repository::open(current_dir)
