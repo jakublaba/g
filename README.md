@@ -55,3 +55,7 @@ g stores your profiles as `.json` files in `~/.config/g-profiles/`, for example:
 This file is always named `<PROFILE_NAME>.json`.
 Ssh keys related to the profile are stored as `~/.ssh/id_<PROFILE_NAME>` and `~/.ssh/id_<PROFILE_NAME>.pub`.
 > Warning: File names matter, if you manually alter them, g won't be able to find them
+
+When switching profiles, g sets `user.name` and `user.email`.
+It also sets `core.sshCommand` to use correct ssh key.
+Because of the latter, git 2.10+ is required.
