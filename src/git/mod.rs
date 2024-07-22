@@ -1,12 +1,9 @@
 use std::env;
-use std::fmt::Display;
 use std::path::Path;
 
 use git2::{Config, Cred, FetchOptions, RemoteCallbacks, Repository};
 use git2::build::RepoBuilder;
 use regex::Regex;
-use serde::de::IntoDeserializer;
-use serde_json::value::Index;
 
 use crate::git::error::Error;
 use crate::home;
