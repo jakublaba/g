@@ -2,18 +2,16 @@ use std::fmt::Display;
 use std::fs;
 use std::path::Path;
 
+use anyhow::Result;
 use regex::Regex;
 use ssh_key::HashAlg;
 
-use crate::profile::error::Error;
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
 use crate::ssh::key::{ED25519, generate_pair, private_key_path, public_key_path, regenerate_public_from_private, write_private_key, write_public_key};
 
 pub mod profile;
-pub mod error;
 
 const PROFILE_REGEX: &str = r"g-profiles/(?<prof>.+)\.json";
-pub type Result<T> = std::result::Result<T, Error>;
 
 pub fn list_profiles() -> Vec<String> {
     let profiles_dir = profiles_dir();
@@ -37,7 +35,6 @@ pub fn list_profiles() -> Vec<String> {
     };
 }
 
-// TODO make this not generate any files if any of the stages fails
 pub fn generate_profile(profile: Profile, force: bool) {
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
