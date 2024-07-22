@@ -7,7 +7,7 @@ use ssh_key::HashAlg;
 
 use crate::profile::error::Error;
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
-use crate::ssh::key::{ED25519, generate_pair, key_pair_exists, private_key_path, public_key_path, regenerate_public_from_private, write_private_key, write_public_key};
+use crate::ssh::key::{ED25519, generate_pair, private_key_path, public_key_path, regenerate_public_from_private, write_private_key, write_public_key};
 
 pub mod profile;
 pub mod error;
