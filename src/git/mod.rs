@@ -9,6 +9,7 @@ use serde::de::IntoDeserializer;
 use serde_json::value::Index;
 
 use crate::git::error::Error;
+use crate::home;
 use crate::profile::profile::Profile;
 use crate::ssh::key::{private_key_path, public_key_path};
 
@@ -23,6 +24,8 @@ pub fn configure_user(profile: &Profile) -> Result<()> {
     config.set_str("user.name", &profile.user_name)
         .map_err(Error::Config)?;
     config.set_str("user.email", &profile.user_email)
+        .map_err(Error::Config)?;
+    config.set_str("core.sshCommand", &ssh_command(&profile.name))
         .map_err(Error::Config)?;
 
     Ok(())
@@ -68,4 +71,9 @@ fn parse_repo_name(url: &str) -> Result<String> {
         .name("repo")
         .ok_or(Error::Url(url.into()))
         .map(|m| m.as_str().into())
+}
+
+fn ssh_command(profile_name: &str) -> String {
+    let home = home();
+    format!("ssh -i {home}/.ssh/id_{profile_name} -F /dev/null")
 }
