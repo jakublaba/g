@@ -1,7 +1,6 @@
 use std::fs;
 use std::path::Path;
 
-use anyhow::Result;
 use regex::Regex;
 
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
@@ -17,13 +16,14 @@ pub fn profile_list() -> Vec<String> {
     let regex = Regex::new(PROFILE_REGEX).unwrap();
     return match paths {
         Ok(paths) => {
-            paths.map(|p| { p.unwrap() })
+            paths.map(Result::unwrap)
                 .map(|p| p.path())
-                .map(|p| String::from(p.to_str().unwrap()))
+                .map(|p| p.to_str().unwrap().to_string())
+                .filter(|p| regex.is_match(p))
                 .map(|p| regex.captures(&p)
-                    .expect("path doesn't match regex")
+                    .unwrap()
                     .name("prof")
-                    .expect("can't extract profile name from path")
+                    .unwrap()
                     .as_str()
                     .into()
                 )
@@ -63,9 +63,10 @@ pub fn remove_profile(profile_name: &str) {
 }
 
 pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<String>) {
-    let path = profile_path(&name);
-    if !Path::new(&path).exists() {
-        panic!("Can't open {path}");
+    let profile_path = profile_path(&name);
+    if !Path::new(&profile_path).exists() {
+        println!("Profile doesn't exist: {name}");
+        return;
     }
     match Profile::read_json(&name) {
         Ok(mut profile) => {
@@ -73,6 +74,6 @@ pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<
             if let Some(usr_name) = user_name { profile.user_name = usr_name };
             if let Some(usr_email) = user_email { profile.user_email = usr_email };
         }
-        Err(e) => { panic!("{}", e.to_string()) }
+        Err(_) => println!("Error reading profile: {profile_path}")
     }
 }

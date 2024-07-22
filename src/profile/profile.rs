@@ -1,11 +1,11 @@
 use std::{fs, fs::File, io::BufReader};
 use std::fmt::{Display, Formatter};
 
+use anyhow::Result;
 use git2::Config;
 use serde::{Deserialize, Serialize};
 
 use crate::home;
-use crate::profile::Result;
 
 const PROFILES_DIR: &str = ".config/g-profiles";
 
@@ -47,16 +47,13 @@ impl TryFrom<Config> for PartialProfile {
     type Error = git2::Error;
 
     fn try_from(config: Config) -> std::result::Result<Self, Self::Error> {
-        let user_name = config.get_string("user.name")
-            .map_err(|e| e)?;
-        let user_email = config.get_string("user.email")
-            .map_err(|e| e)?;
+        let user_name = config.get_string("user.name")?;
+        let user_email = config.get_string("user.email")?;
 
         Ok(Self { user_name, user_email })
     }
 }
 
-// TODO - handle overriding existing profiles
 impl Profile {
     pub fn new(name: String, user_name: String, user_email: String) -> Self {
         Self { name, user_name, user_email }
