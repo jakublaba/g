@@ -31,9 +31,8 @@ You can list all existing g profiles with `g profile list` - it'll show you all 
 To specific settings of a profile, use `g profile show <PROFILE_NAME>`.
 
 The core feature of g is quickly jumping between your profiles. You can do it with the `su` command: `g su johnsmith`.
-This configures username, email and ssh key to use for the git repository you are currently in, it fails outside
-repositories unless you
-use `--global` flag, which tells g to modify global git config instead.
+This configures your credentials for current git repository if you run g from inside a repo, or globally otherwise.
+You can still set profile globally from inside a repo by using the `--global` flag.
 
 Even though `su` is also related to profile management, I've decided to put it as a separate command rather than
 subcommand of `profile`, because of how often it is used.
