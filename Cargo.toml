@@ -1,7 +1,12 @@
 [package]
 name = "g"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+keywords = ["git", "cli"]
+categories = ["command-line-utilities"]
+description = "cli tool for managing multiple git profiles"
+repository = "https://github.com/jakublaba/g"
 
 [dependencies]
 clap = { version = "4.5.8", features = ["derive"] }
