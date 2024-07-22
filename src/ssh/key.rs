@@ -3,6 +3,7 @@ use std::path::Path;
 use rand::thread_rng;
 use ssh_key::{LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::Ed25519Keypair;
+
 use crate::home;
 use crate::ssh::error::Error;
 use crate::ssh::Result;
@@ -20,6 +21,15 @@ pub fn generate_pair(user_email: &str) -> (PrivateKey, PublicKey) {
     public.set_comment(user_email);
 
     (private, public)
+}
+
+pub fn regenerate_public_from_private(profile_name: &str) -> Result<()> {
+    let private_key_path = private_key_path(profile_name);
+    let private = PrivateKey::read_openssh_file(Path::new(&private_key_path))
+        .map_err(|cause| Error::ReadKey { key_path: private_key_path, cause })?;
+    let public = PublicKey::from(&private);
+
+    write_public_key(profile_name, &public)
 }
 
 pub fn write_private_key(profile_name: &str, key: &PrivateKey) -> Result<()> {

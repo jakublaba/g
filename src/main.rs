@@ -32,9 +32,9 @@ fn main() {
                         ProfileCmd::Show { profile } => {
                             println!("{profile:#?}")
                         }
-                        ProfileCmd::Add { name, user_name, user_email } => {
+                        ProfileCmd::Add { name, user_name, user_email, force } => {
                             let profile = Profile::new(name, user_name, user_email);
-                            generate_profile(profile);
+                            generate_profile(profile, force);
                         }
                         ProfileCmd::Remove { profile } => {
                             remove_profile(&profile)

@@ -7,7 +7,7 @@ use ssh_key::HashAlg;
 
 use crate::profile::error::Error;
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
-use crate::ssh::key::{ED25519, generate_pair, private_key_path, public_key_path, write_private_key, write_public_key};
+use crate::ssh::key::{ED25519, generate_pair, private_key_path, public_key_path, regenerate_public_from_private, write_private_key, write_public_key};
 
 pub mod profile;
 pub mod error;
@@ -38,22 +38,39 @@ pub fn list_profiles() -> Vec<String> {
 }
 
 // TODO make this not generate any files if any of the stages fails
-pub fn generate_profile(profile: Profile) {
+pub fn generate_profile(profile: Profile, force: bool) {
+    let profile_name = profile.name.clone();
+    let user_email = profile.user_email.clone();
+    let profile_path = profile_path(&profile_name);
+    if Path::new(&profile_path).exists() && !force {
+        println!("Profile '{profile_name}' already exists, if you want to override it, re-run with --force");
+    } else {
+        let profiles_dir = profiles_dir();
+        if !Path::new(&profiles_dir).exists() {
+            fs::create_dir_all(profiles_dir).unwrap();
+        }
+        if let Err(e) = profile.write_json() { panic!("{}", e.to_string()) }
+        println!("Profile written");
+    }
     println!("Generating a new ssh-ed25519 key pair");
-    let (private, public) = generate_pair(&profile.user_email);
-    if let Err(e) = write_private_key(&profile.name, &private) { panic!("{}", e.to_string()) }
-    if let Err(e) = write_public_key(&profile.name, &public) { panic!("{}", e.to_string()) }
+    let private_path = private_key_path(&profile_name);
+    if !force {
+        if Path::new(&private_path).exists() {
+            println!("Found private key, re-generating public key from it.");
+            regenerate_public_from_private(&profile_name).unwrap();
+        } else {
+            println!("ssh keys for profile '{profile_name}' already exist, if you want to re-generate them, re-run with --force");
+        }
+        return;
+    }
+    let (private, public) = generate_pair(&user_email);
+    if let Err(e) = write_private_key(&profile_name, &private) { panic!("{}", e.to_string()) }
+    if let Err(e) = write_public_key(&profile_name, &public) { panic!("{}", e.to_string()) }
     println!("Key pair written");
     let fingerprint = private.fingerprint(HashAlg::Sha256);
     let randomart = fingerprint.to_randomart(ED25519);
     println!("The key fingerprint is:\n{fingerprint}");
     println!("They key's randomart image is:\n{randomart}");
-    let profiles_dir = profiles_dir();
-    if !Path::new(&profiles_dir).exists() {
-        fs::create_dir_all(profiles_dir).unwrap();
-    }
-    if let Err(e) = profile.write_json() { panic!("{}", e.to_string()) }
-    println!("Profile written");
 }
 
 pub fn remove_profile(profile_name: &str) {
@@ -77,6 +94,7 @@ pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<
     }
 }
 
+// TODO this should be moved to some util module
 fn rm_file<P: AsRef<Path> + Display>(path: P) {
     println!("Removing {path}");
     if let Err(_) = fs::remove_file(&path) {
