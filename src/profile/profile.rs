@@ -78,6 +78,16 @@ impl Profile {
     }
 }
 
+impl Display for Profile {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let name = &self.name;
+        let user_name = &self.user_name;
+        let user_email = &self.user_email;
+
+        write!(f, "name: {name}\nuser_name: {user_name}\nuser_email: {user_email}")
+    }
+}
+
 impl From<(&str, PartialProfile)> for Profile {
     fn from(args: (&str, PartialProfile)) -> Self {
         let (name, partial) = args;

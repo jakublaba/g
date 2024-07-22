@@ -20,11 +20,14 @@ fn main() {
     if let Some(cmd) = cli.command {
         match cmd {
             Cmd::Su { profile, global } => {
-                configure_user(&profile, global);
+                configure_user(&profile, global)
             }
             Cmd::WhoAmI { global } => {
-                let profile = who_am_i(global).unwrap();
-                println!("{profile}");
+                if let Some(profile) = who_am_i(global) {
+                    println!("{profile}");
+                } else {
+                    println!("No profile set")
+                }
             }
             Cmd::Profile { command } => {
                 if let Some(prof_cmd) = command {
@@ -34,9 +37,7 @@ fn main() {
                                 println!("{profile}");
                             }
                         }
-                        ProfileCmd::Show { profile } => {
-                            println!("{profile:#?}")
-                        }
+                        ProfileCmd::Show { profile } => println!("{profile}"),
                         ProfileCmd::Add { name, user_name, user_email, force } => {
                             let profile = Profile::new(name, user_name, user_email);
                             add_profile(profile, force);
