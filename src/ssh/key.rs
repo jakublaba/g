@@ -3,6 +3,7 @@ use std::path::Path;
 use rand::thread_rng;
 use ssh_key::{LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::Ed25519Keypair;
+
 use crate::home;
 use crate::ssh::error::Error;
 use crate::ssh::Result;
@@ -44,4 +45,11 @@ pub fn public_key_path(profile_name: &str) -> String {
     let home = home();
     let ssh_dir = format!("{home}/{SSH_DIR}");
     format!("{ssh_dir}/id_{profile_name}.pub")
+}
+
+pub fn key_pair_exists(profile_name: &str) -> bool {
+    let private_path = private_key_path(profile_name);
+    let public_path = public_key_path(profile_name);
+
+    Path::new(&private_path).exists() && Path::new(&public_path).exists()
 }
