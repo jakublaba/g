@@ -23,8 +23,7 @@ pub fn generate_pair(user_email: &str) -> (PrivateKey, PublicKey) {
 
 pub fn regenerate_public_from_private(profile_name: &str) -> Result<()> {
     let private_key_path = private_key_path(profile_name);
-    let private = PrivateKey::read_openssh_file(Path::new(&private_key_path))
-        .map_err(|cause| Error::ReadKey { key_path: private_key_path, cause })?;
+    let private = PrivateKey::read_openssh_file(Path::new(&private_key_path))?;
     let public = PublicKey::from(&private);
 
     write_public_key(profile_name, &public)
