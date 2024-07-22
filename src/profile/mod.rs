@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use std::fs;
 use std::path::Path;
 
@@ -37,14 +36,14 @@ pub fn profile_list() -> Vec<String> {
 pub fn add_profile(profile: Profile, force: bool) {
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
-    generate_profile(profile, force: bool);
-    generate_key_pair(&profile_name, &user_email, force: bool);
+    generate_profile(profile, force);
+    generate_key_pair(&profile_name, &user_email, force);
 }
 
 fn generate_profile(profile: Profile, force: bool) {
     let profile_path = profile_path(&profile.name);
     if Path::new(&profile_path).exists() && !force {
-        println!("Profile '{profile_name}' already exists, if you want to override it, re-run with --force");
+        println!("Profile '{}' already exists, if you want to override it, re-run with --force", &profile.name);
     } else {
         let profiles_dir = profiles_dir();
         if !Path::new(&profiles_dir).exists() {

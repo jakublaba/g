@@ -22,8 +22,8 @@ pub fn generate_key_pair(profile_name: &str, user_email: &str, force: bool) {
         return;
     }
     let (private, public) = generate_pair_from_scratch(&user_email);
-    if let Err(e) = write_private_key(profile_name, &private) { panic!("{}", e.to_string()) }
-    if let Err(e) = write_public_key(profile_name, &public) { panic!("{}", e.to_string()) }
+    write_private_key(profile_name, &private);
+    write_public_key(profile_name, &public);
     println!("Key pair written");
     let fingerprint = private.fingerprint(HashAlg::Sha256);
     let randomart = fingerprint.to_randomart(ED25519);
@@ -50,13 +50,8 @@ fn regenerate_public_from_private(profile_name: &str, user_email: &str) {
             public.set_comment(user_email);
             write_public_key(profile_name, &mut public);
         }
-        Err(_) => {}
+        Err(_) => println!("Error reading private key: {private_key_path}")
     }
-    let private = PrivateKey::read_openssh_file(Path::new(&private_key_path));
-    let mut public = PublicKey::from(&private);
-    public.set_comment(user_email);
-
-    write_public_key(profile_name, &public)
 }
 
 fn write_private_key(profile_name: &str, key: &PrivateKey) {
