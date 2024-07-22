@@ -20,7 +20,7 @@ fn main() {
     if let Some(cmd) = cli.command {
         match cmd {
             Cmd::Su { profile, global } => {
-                if let Err(e) = configure_user(&profile, global) { panic!("{}", e.to_string()) }
+                configure_user(&profile, global);
             }
             Cmd::WhoAmI { global } => {
                 let profile = who_am_i(global).unwrap();
