@@ -40,8 +40,8 @@ pub enum ProfileCmd {
     /// Inspect a profile
     Show {
         /// Name of the profile
-        #[arg(value_parser = | name: & str | Profile::read_json(name))]
-        profile: Profile,
+        #[arg()]
+        name: String,
     },
     /// Add a new profile
     Add {

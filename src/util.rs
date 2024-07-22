@@ -3,7 +3,6 @@ use std::fs;
 use std::path::Path;
 
 pub fn rm_file<P: AsRef<Path> + Display>(path: P) {
-    println!("Removing {path}");
     if let Err(_) = fs::remove_file(&path) {
         println!("{path} doesn't exist, skipping");
     } else {

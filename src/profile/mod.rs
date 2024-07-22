@@ -33,6 +33,14 @@ pub fn profile_list() -> Vec<String> {
     };
 }
 
+pub fn show_profile(profile_name: &str) {
+    if let Ok(profile) = Profile::read_json(profile_name) {
+        println!("{profile}");
+    } else {
+        println!("Profile '{profile_name}' not found");
+    }
+}
+
 pub fn add_profile(profile: Profile, force: bool) {
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
