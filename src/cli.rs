@@ -15,6 +15,9 @@ pub enum Cmd {
         /// Name of the profile
         #[arg(value_parser = | name: & str | Profile::read_json(name))]
         profile: Profile,
+        /// Set the profile for global git config
+        #[arg(short, long)]
+        global: bool,
     },
     /// Manage profiles
     Profile {
