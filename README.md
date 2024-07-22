@@ -8,6 +8,14 @@ credentials manually each time.
 - git 2.10 or newer
 - cargo 1.79 or newer
 
+# Installation
+
+```
+cargo install g
+```
+
+I've had some issues building on arm64 mac and win11, so currently only linux is supported.
+
 # Usage
 
 ## Creating a profile
