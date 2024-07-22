@@ -25,7 +25,9 @@ fn main() {
                 if let Some(prof_cmd) = command {
                     match prof_cmd {
                         ProfileCmd::List => {
-                            list_profiles();
+                            for profile in list_profiles() {
+                                println!("{profile}");
+                            }
                         }
                         ProfileCmd::Show { profile } => {
                             println!("{profile:#?}")

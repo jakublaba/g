@@ -15,22 +15,26 @@ pub mod error;
 const PROFILE_REGEX: &str = r"g-profiles/(?<prof>.+)\.json";
 pub type Result<T> = std::result::Result<T, Error>;
 
-pub fn list_profiles() {
+pub fn list_profiles() -> Vec<String> {
     let profiles_dir = profiles_dir();
-    let paths = fs::read_dir(&profiles_dir)
-        .expect(&format!("Can't open {profiles_dir}"));
-    for path in paths {
-        let p = path.unwrap();
-        let p_str: String = p.path().to_str().unwrap().into();
-        let regex = Regex::new(PROFILE_REGEX).unwrap();
-        let profile_name: String = regex.captures(&p_str)
-            .expect("path doesn't match regex")
-            .name("prof")
-            .expect("can't extract profile name from path")
-            .as_str()
-            .into();
-        println!("{profile_name}");
-    }
+    let paths = fs::read_dir(&profiles_dir);
+    let regex = Regex::new(PROFILE_REGEX).unwrap();
+    return match paths {
+        Ok(paths) => {
+            paths.map(|p| { p.unwrap() })
+                .map(|p| p.path())
+                .map(|p| String::from(p.to_str().unwrap()))
+                .map(|p| regex.captures(&p)
+                    .expect("path doesn't match regex")
+                    .name("prof")
+                    .expect("can't extract profile name from path")
+                    .as_str()
+                    .into()
+                )
+                .collect()
+        }
+        Err(_) => vec![]
+    };
 }
 
 // TODO make this not generate any files if any of the stages fails
@@ -44,6 +48,10 @@ pub fn generate_profile(profile: Profile) {
     let randomart = fingerprint.to_randomart(ED25519);
     println!("The key fingerprint is:\n{fingerprint}");
     println!("They key's randomart image is:\n{randomart}");
+    let profiles_dir = profiles_dir();
+    if !Path::new(&profiles_dir).exists() {
+        fs::create_dir_all(profiles_dir).unwrap();
+    }
     if let Err(e) = profile.write_json() { panic!("{}", e.to_string()) }
     println!("Profile written");
 }
