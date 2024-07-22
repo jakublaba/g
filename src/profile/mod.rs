@@ -52,15 +52,15 @@ pub fn generate_profile(profile: Profile, force: bool) {
         if let Err(e) = profile.write_json() { panic!("{}", e.to_string()) }
         println!("Profile written");
     }
-    if key_pair_exists(&profile_name) && !force {
-        println!("ssh keys for profile '{profile_name}' already exist, if you want to re-generate them, re-run with --force");
-        return;
-    }
     println!("Generating a new ssh-ed25519 key pair");
     let private_path = private_key_path(&profile_name);
-    if Path::new(&private_path).exists() && !force {
-        println!("Found private key, re-generating public key from it.");
-        regenerate_public_from_private(&profile_name).unwrap();
+    if !force {
+        if Path::new(&private_path).exists() {
+            println!("Found private key, re-generating public key from it.");
+            regenerate_public_from_private(&profile_name).unwrap();
+        } else {
+            println!("ssh keys for profile '{profile_name}' already exist, if you want to re-generate them, re-run with --force");
+        }
         return;
     }
     let (private, public) = generate_pair(&user_email);
