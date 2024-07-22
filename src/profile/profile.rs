@@ -1,12 +1,11 @@
 use std::{fs, fs::File, io::BufReader};
 use std::fmt::{Display, Formatter};
 
+use anyhow::Result;
 use git2::Config;
 use serde::{Deserialize, Serialize};
 
 use crate::home;
-use crate::profile::error::Error;
-use crate::profile::Result;
 
 const PROFILES_DIR: &str = ".config/g-profiles";
 
@@ -48,16 +47,13 @@ impl TryFrom<Config> for PartialProfile {
     type Error = git2::Error;
 
     fn try_from(config: Config) -> std::result::Result<Self, Self::Error> {
-        let user_name = config.get_string("user.name")
-            .map_err(|e| e)?;
-        let user_email = config.get_string("user.email")
-            .map_err(|e| e)?;
+        let user_name = config.get_string("user.name")?;
+        let user_email = config.get_string("user.email")?;
 
         Ok(Self { user_name, user_email })
     }
 }
 
-// TODO - handle overriding existing profiles
 impl Profile {
     pub fn new(name: String, user_name: String, user_email: String) -> Self {
         Self { name, user_name, user_email }
@@ -65,11 +61,9 @@ impl Profile {
 
     pub fn read_json(profile_name: &str) -> Result<Self> {
         let path = profile_path(profile_name);
-        let file = File::open(&path)
-            .map_err(|cause| Error::Io { path, cause })?;
+        let file = File::open(&path)?;
         let reader = BufReader::new(file);
-        let partial = serde_json::from_reader(reader)
-            .map_err(Error::Serde)?;
+        let partial = serde_json::from_reader(reader)?;
 
         Ok((profile_name, partial).into())
     }
@@ -77,11 +71,20 @@ impl Profile {
     pub fn write_json(self) -> Result<()> {
         let (profile_name, partial) = self.into();
         let path = profile_path(&profile_name);
-        let json = serde_json::to_string(&partial)
-            .map_err(Error::Serde)?;
+        let json = serde_json::to_string(&partial)?;
+        fs::write(&path, json)?;
 
-        fs::write(&path, json)
-            .map_err(|cause| Error::Io { path, cause })
+        Ok(())
+    }
+}
+
+impl Display for Profile {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let name = &self.name;
+        let user_name = &self.user_name;
+        let user_email = &self.user_email;
+
+        write!(f, "name: {name}\nuser_name: {user_name}\nuser_email: {user_email}")
     }
 }
 

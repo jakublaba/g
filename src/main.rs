@@ -3,14 +3,15 @@ use std::env;
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
-use crate::git::{clone, configure_user, who_am_i};
-use crate::profile::{edit_profile, generate_profile, list_profiles, remove_profile};
+use crate::git::{configure_user, who_am_i};
+use crate::profile::{add_profile, edit_profile, profile_list, remove_profile, show_profile};
 use crate::profile::profile::Profile;
 
 mod cli;
 mod ssh;
 mod git;
 mod profile;
+mod util;
 
 // TODO fix error handling
 fn main() {
@@ -19,26 +20,29 @@ fn main() {
     if let Some(cmd) = cli.command {
         match cmd {
             Cmd::Su { profile, global } => {
-                if let Err(e) = configure_user(&profile, global) { panic!("{}", e.to_string()) }
+                configure_user(&profile, global)
             }
             Cmd::WhoAmI { global } => {
-                let profile = who_am_i(global).unwrap();
-                println!("{profile}");
+                if let Some(profile) = who_am_i(global) {
+                    println!("{profile}");
+                } else {
+                    println!("No profile set")
+                }
             }
             Cmd::Profile { command } => {
                 if let Some(prof_cmd) = command {
                     match prof_cmd {
                         ProfileCmd::List => {
-                            for profile in list_profiles() {
+                            for profile in profile_list() {
                                 println!("{profile}");
                             }
                         }
-                        ProfileCmd::Show { profile } => {
-                            println!("{profile:#?}")
+                        ProfileCmd::Show { name } => {
+                            show_profile(&name);
                         }
                         ProfileCmd::Add { name, user_name, user_email, force } => {
                             let profile = Profile::new(name, user_name, user_email);
-                            generate_profile(profile, force);
+                            add_profile(profile, force);
                         }
                         ProfileCmd::Remove { profile } => {
                             remove_profile(&profile)
@@ -48,9 +52,6 @@ fn main() {
                         }
                     }
                 }
-            }
-            Cmd::Clone { profile, url } => {
-                if let Err(e) = clone(&profile, &url) { panic!("{}", e.to_string()) }
             }
         }
     };

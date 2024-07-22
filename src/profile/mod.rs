@@ -1,33 +1,29 @@
-use std::fmt::Display;
 use std::fs;
 use std::path::Path;
 
 use regex::Regex;
-use ssh_key::HashAlg;
 
-use crate::profile::error::Error;
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
-use crate::ssh::key::{ED25519, generate_pair, private_key_path, public_key_path, regenerate_public_from_private, write_private_key, write_public_key};
+use crate::ssh::{generate_key_pair, private_key_path, public_key_path};
+use crate::util::rm_file;
 
 pub mod profile;
-pub mod error;
-
 const PROFILE_REGEX: &str = r"g-profiles/(?<prof>.+)\.json";
-pub type Result<T> = std::result::Result<T, Error>;
 
-pub fn list_profiles() -> Vec<String> {
+pub fn profile_list() -> Vec<String> {
     let profiles_dir = profiles_dir();
     let paths = fs::read_dir(&profiles_dir);
     let regex = Regex::new(PROFILE_REGEX).unwrap();
     return match paths {
         Ok(paths) => {
-            paths.map(|p| { p.unwrap() })
+            paths.map(Result::unwrap)
                 .map(|p| p.path())
-                .map(|p| String::from(p.to_str().unwrap()))
+                .map(|p| p.to_str().unwrap().to_string())
+                .filter(|p| regex.is_match(p))
                 .map(|p| regex.captures(&p)
-                    .expect("path doesn't match regex")
+                    .unwrap()
                     .name("prof")
-                    .expect("can't extract profile name from path")
+                    .unwrap()
                     .as_str()
                     .into()
                 )
@@ -37,40 +33,35 @@ pub fn list_profiles() -> Vec<String> {
     };
 }
 
-// TODO make this not generate any files if any of the stages fails
-pub fn generate_profile(profile: Profile, force: bool) {
+pub fn show_profile(profile_name: &str) {
+    if let Ok(profile) = Profile::read_json(profile_name) {
+        println!("{profile}");
+    } else {
+        println!("Profile '{profile_name}' not found");
+    }
+}
+
+pub fn add_profile(profile: Profile, force: bool) {
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
-    let profile_path = profile_path(&profile_name);
+    generate_profile(profile, force);
+    generate_key_pair(&profile_name, &user_email, force);
+}
+
+fn generate_profile(profile: Profile, force: bool) {
+    let profile_path = profile_path(&profile.name);
     if Path::new(&profile_path).exists() && !force {
-        println!("Profile '{profile_name}' already exists, if you want to override it, re-run with --force");
+        println!("Profile '{}' already exists, if you want to override it, re-run with --force", &profile.name);
     } else {
         let profiles_dir = profiles_dir();
         if !Path::new(&profiles_dir).exists() {
             fs::create_dir_all(profiles_dir).unwrap();
         }
-        if let Err(e) = profile.write_json() { panic!("{}", e.to_string()) }
+        if let Err(_) = profile.write_json() {
+            println!("Cannot write profile: {profile_path}");
+        }
         println!("Profile written");
     }
-    println!("Generating a new ssh-ed25519 key pair");
-    let private_path = private_key_path(&profile_name);
-    if !force {
-        if Path::new(&private_path).exists() {
-            println!("Found private key, re-generating public key from it.");
-            regenerate_public_from_private(&profile_name).unwrap();
-        } else {
-            println!("ssh keys for profile '{profile_name}' already exist, if you want to re-generate them, re-run with --force");
-        }
-        return;
-    }
-    let (private, public) = generate_pair(&user_email);
-    if let Err(e) = write_private_key(&profile_name, &private) { panic!("{}", e.to_string()) }
-    if let Err(e) = write_public_key(&profile_name, &public) { panic!("{}", e.to_string()) }
-    println!("Key pair written");
-    let fingerprint = private.fingerprint(HashAlg::Sha256);
-    let randomart = fingerprint.to_randomart(ED25519);
-    println!("The key fingerprint is:\n{fingerprint}");
-    println!("They key's randomart image is:\n{randomart}");
 }
 
 pub fn remove_profile(profile_name: &str) {
@@ -80,9 +71,10 @@ pub fn remove_profile(profile_name: &str) {
 }
 
 pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<String>) {
-    let path = profile_path(&name);
-    if !Path::new(&path).exists() {
-        panic!("Can't open {path}");
+    let profile_path = profile_path(&name);
+    if !Path::new(&profile_path).exists() {
+        println!("Profile doesn't exist: {name}");
+        return;
     }
     match Profile::read_json(&name) {
         Ok(mut profile) => {
@@ -90,16 +82,6 @@ pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<
             if let Some(usr_name) = user_name { profile.user_name = usr_name };
             if let Some(usr_email) = user_email { profile.user_email = usr_email };
         }
-        Err(e) => { panic!("{}", e.to_string()) }
-    }
-}
-
-// TODO this should be moved to some util module
-fn rm_file<P: AsRef<Path> + Display>(path: P) {
-    println!("Removing {path}");
-    if let Err(_) = fs::remove_file(&path) {
-        println!("{path} doesn't exist, skipping");
-    } else {
-        println!("{path} removed");
+        Err(_) => println!("Error reading profile: {profile_path}")
     }
 }

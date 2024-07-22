@@ -31,15 +31,6 @@ pub enum Cmd {
         #[clap(subcommand)]
         command: Option<ProfileCmd>,
     },
-    /// Clone a git repository
-    Clone {
-        /// Name of profile to use for authorization
-        #[arg()]
-        profile: String,
-        /// Url of the remote repository
-        #[arg()]
-        url: String,
-    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -49,10 +40,9 @@ pub enum ProfileCmd {
     /// Inspect a profile
     Show {
         /// Name of the profile
-        #[arg(value_parser = | name: & str | Profile::read_json(name))]
-        profile: Profile,
+        #[arg()]
+        name: String,
     },
-    // TODO now it overrides existing profiles, make it warn in such case and add --force flag
     /// Add a new profile
     Add {
         /// Name of the profile
