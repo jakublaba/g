@@ -1,19 +1,20 @@
 use std::{fs, fs::File, io::BufReader};
 
 use serde::{Deserialize, Serialize};
-
+use crate::home;
 use crate::profile::error::Error;
 use crate::profile::Result;
 
-const HOME: &str = env!("HOME");
 const PROFILES_DIR: &str = ".config/g-profiles";
 
 pub fn profiles_dir() -> String {
-    format!("{HOME}/{PROFILES_DIR}")
+    let home = home();
+    format!("{home}/{PROFILES_DIR}")
 }
 
 pub fn profile_path(profile_name: &str) -> String {
-    let profiles_dir = format!("{HOME}/{PROFILES_DIR}");
+    let home = home();
+    let profiles_dir = format!("{home}/{PROFILES_DIR}");
     format!("{profiles_dir}/{profile_name}.json")
 }
 
