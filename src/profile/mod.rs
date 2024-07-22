@@ -48,6 +48,10 @@ pub fn generate_profile(profile: Profile) {
     let randomart = fingerprint.to_randomart(ED25519);
     println!("The key fingerprint is:\n{fingerprint}");
     println!("They key's randomart image is:\n{randomart}");
+    let profiles_dir = profiles_dir();
+    if !Path::new(&profiles_dir).exists() {
+        fs::create_dir_all(profiles_dir).unwrap();
+    }
     if let Err(e) = profile.write_json() { panic!("{}", e.to_string()) }
     println!("Profile written");
 }
