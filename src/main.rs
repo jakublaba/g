@@ -4,7 +4,7 @@ use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::git::{configure_user, who_am_i};
-use crate::profile::{edit_profile, generate_profile, profile_list, remove_profile};
+use crate::profile::{add_profile, edit_profile, profile_list, remove_profile};
 use crate::profile::profile::Profile;
 
 mod cli;
@@ -39,7 +39,7 @@ fn main() {
                         }
                         ProfileCmd::Add { name, user_name, user_email, force } => {
                             let profile = Profile::new(name, user_name, user_email);
-                            generate_profile(profile, force);
+                            add_profile(profile, force);
                         }
                         ProfileCmd::Remove { profile } => {
                             remove_profile(&profile)

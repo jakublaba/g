@@ -4,10 +4,9 @@ use std::path::Path;
 
 use anyhow::Result;
 use regex::Regex;
-use ssh_key::HashAlg;
 
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
-use crate::ssh::{ED25519, generate_pair, private_key_path, public_key_path, regenerate_public_from_private, write_private_key, write_public_key};
+use crate::ssh::{generate_key_pair, private_key_path, public_key_path};
 use crate::util::rm_file;
 
 pub mod profile;
@@ -35,10 +34,15 @@ pub fn profile_list() -> Vec<String> {
     };
 }
 
-pub fn generate_profile(profile: Profile, force: bool) {
+pub fn add_profile(profile: Profile, force: bool) {
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
-    let profile_path = profile_path(&profile_name);
+    generate_profile(profile, force: bool);
+    generate_key_pair(&profile_name, &user_email, force: bool);
+}
+
+fn generate_profile(profile: Profile, force: bool) {
+    let profile_path = profile_path(&profile.name);
     if Path::new(&profile_path).exists() && !force {
         println!("Profile '{profile_name}' already exists, if you want to override it, re-run with --force");
     } else {
@@ -46,28 +50,11 @@ pub fn generate_profile(profile: Profile, force: bool) {
         if !Path::new(&profiles_dir).exists() {
             fs::create_dir_all(profiles_dir).unwrap();
         }
-        if let Err(e) = profile.write_json() { panic!("{}", e.to_string()) }
+        if let Err(_) = profile.write_json() {
+            println!("Cannot write profile: {profile_path}");
+        }
         println!("Profile written");
     }
-    println!("Generating a new ssh-ed25519 key pair");
-    let private_path = private_key_path(&profile_name);
-    if !force {
-        if Path::new(&private_path).exists() {
-            println!("Found private key, re-generating public key from it.");
-            regenerate_public_from_private(&profile_name).unwrap();
-        } else {
-            println!("ssh keys for profile '{profile_name}' already exist, if you want to re-generate them, re-run with --force");
-        }
-        return;
-    }
-    let (private, public) = generate_pair(&user_email);
-    if let Err(e) = write_private_key(&profile_name, &private) { panic!("{}", e.to_string()) }
-    if let Err(e) = write_public_key(&profile_name, &public) { panic!("{}", e.to_string()) }
-    println!("Key pair written");
-    let fingerprint = private.fingerprint(HashAlg::Sha256);
-    let randomart = fingerprint.to_randomart(ED25519);
-    println!("The key fingerprint is:\n{fingerprint}");
-    println!("They key's randomart image is:\n{randomart}");
 }
 
 pub fn remove_profile(profile_name: &str) {
