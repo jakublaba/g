@@ -1,6 +1,9 @@
 use std::{fs, fs::File, io::BufReader};
+use std::fmt::{Display, Formatter};
 
+use git2::Config;
 use serde::{Deserialize, Serialize};
+
 use crate::home;
 use crate::profile::error::Error;
 use crate::profile::Result;
@@ -26,11 +29,32 @@ pub struct Profile {
 }
 
 #[derive(Serialize, Deserialize)]
-struct PartialProfile {
+pub struct PartialProfile {
     #[serde(rename = "name")]
     user_name: String,
     #[serde(rename = "email")]
     user_email: String,
+}
+
+impl Display for PartialProfile {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let name = &self.user_name;
+        let email = &self.user_email;
+        write!(f, "name: {name}\nemail: {email}")
+    }
+}
+
+impl TryFrom<Config> for PartialProfile {
+    type Error = git2::Error;
+
+    fn try_from(config: Config) -> std::result::Result<Self, Self::Error> {
+        let user_name = config.get_string("user.name")
+            .map_err(|e| e)?;
+        let user_email = config.get_string("user.email")
+            .map_err(|e| e)?;
+
+        Ok(Self { user_name, user_email })
+    }
 }
 
 // TODO - handle overriding existing profiles

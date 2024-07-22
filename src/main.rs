@@ -3,7 +3,7 @@ use std::env;
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
-use crate::git::{clone, configure_user};
+use crate::git::{clone, configure_user, who_am_i};
 use crate::profile::{edit_profile, generate_profile, list_profiles, remove_profile};
 use crate::profile::profile::Profile;
 
@@ -20,6 +20,10 @@ fn main() {
         match cmd {
             Cmd::Su { profile, global } => {
                 if let Err(e) = configure_user(&profile, global) { panic!("{}", e.to_string()) }
+            }
+            Cmd::WhoAmI { global } => {
+                let profile = who_am_i(global).unwrap();
+                println!("{profile}");
             }
             Cmd::Profile { command } => {
                 if let Some(prof_cmd) = command {
