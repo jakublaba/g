@@ -25,17 +25,18 @@ it, otherwise both are generated from scratch.
 You can also run this command with `--force` flag to re-generate everything without warning.
 
 ## Inspecting your profiles
-
-(TODO add description about `whoami` command once added)
 You can list all existing g profiles with `g profile list` - it'll show you all the names. \
 To specific settings of a profile, use `g profile show <PROFILE_NAME>`.
 
+## Switching profiles
 The core feature of g is quickly jumping between your profiles. You can do it with the `su` command: `g su johnsmith`.
 This configures your credentials for current git repository if you run g from inside a repo, or globally otherwise.
 You can still set profile globally from inside a repo by using the `--global` flag.
 
 Even though `su` is also related to profile management, I've decided to put it as a separate command rather than
 subcommand of `profile`, because of how often it is used.
+
+You can see currently active profile with `g whoami`, it also supports `--global` flag to check the globally configured profile.
 
 This is just basic overview of commands, for more info run the built-in `g help`, or help for a specific
 c ommand/subcommand.
