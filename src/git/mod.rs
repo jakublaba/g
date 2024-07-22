@@ -7,7 +7,7 @@ use regex::Regex;
 
 use crate::git::error::Error;
 use crate::home;
-use crate::profile::profile::Profile;
+use crate::profile::profile::{PartialProfile, Profile};
 use crate::ssh::key::{private_key_path, public_key_path};
 
 pub mod error;
@@ -25,6 +25,14 @@ pub fn configure_user(profile: &Profile, global: bool) -> Result<()> {
     if is_inside_repo { set_config(profile, false)? };
 
     Ok(())
+}
+
+pub fn who_am_i(global: bool) -> Result<PartialProfile> {
+    let is_inside_repo = is_inside_repo();
+    let config = if global || !is_inside_repo { open_global_config() } else { open_local_config() }?;
+
+    PartialProfile::try_from(config)
+        .map_err(Error::Config)
 }
 
 fn set_config(profile: &Profile, global: bool) -> Result<()> {

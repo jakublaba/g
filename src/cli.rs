@@ -19,6 +19,13 @@ pub enum Cmd {
         #[arg(short, long)]
         global: bool,
     },
+    /// Show currently set profile
+    #[clap(name = "whoami")]
+    WhoAmI {
+        /// Look up the profile in global config instead
+        #[arg(short, long)]
+        global: bool
+    },
     /// Manage profiles
     Profile {
         #[clap(subcommand)]
