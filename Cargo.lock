@@ -343,7 +343,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "g"
+name = "g-rs"
 version = "1.0.0"
 dependencies = [
  "anyhow",

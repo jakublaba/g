@@ -11,7 +11,7 @@ credentials manually each time.
 # Installation
 
 ```
-cargo install g
+cargo install g-rs
 ```
 
 I've had some issues building on arm64 mac and win11, so currently only linux is supported.

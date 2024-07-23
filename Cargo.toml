@@ -1,5 +1,5 @@
 [package]
-name = "g"
+name = "g-rs"
 version = "1.0.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -12,6 +12,10 @@ exclude = [
     ".github/**",
     ".gitignore"
 ]
+
+[[bin]]
+name = "g"
+path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.5.8", features = ["derive"] }
