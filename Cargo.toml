@@ -7,6 +7,11 @@ keywords = ["git", "cli"]
 categories = ["command-line-utilities"]
 description = "cli tool for managing multiple git profiles"
 repository = "https://github.com/jakublaba/g"
+exclude = [
+    ".idea/**",
+    ".github/**",
+    ".gitignore"
+]
 
 [dependencies]
 clap = { version = "4.5.8", features = ["derive"] }
