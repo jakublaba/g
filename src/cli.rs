@@ -76,4 +76,6 @@ pub enum ProfileCmd {
         #[arg(short = 'e', long = "email")]
         user_email: Option<String>,
     },
+    /// Re-generate keys for an existing profile
+    Regenerate,
 }

@@ -50,6 +50,7 @@ fn main() {
                         ProfileCmd::Edit { name, user_name, user_email } => {
                             edit_profile(name, user_name, user_email)
                         }
+                        ProfileCmd::Regenerate => {}
                     }
                 }
             }
