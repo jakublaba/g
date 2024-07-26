@@ -1,5 +1,5 @@
-use std::{fs, fs::File, io::BufReader};
 use std::fmt::{Display, Formatter};
+use std::fs;
 
 use anyhow::Result;
 use git2::Config;
@@ -35,14 +35,6 @@ pub struct PartialProfile {
     user_email: String,
 }
 
-impl Display for PartialProfile {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let name = &self.user_name;
-        let email = &self.user_email;
-        write!(f, "name: {name}\nemail: {email}")
-    }
-}
-
 impl TryFrom<Config> for PartialProfile {
     type Error = git2::Error;
 
@@ -61,9 +53,8 @@ impl Profile {
 
     pub fn read_json(profile_name: &str) -> Result<Self> {
         let path = profile_path(profile_name);
-        let file = File::open(&path)?;
-        let reader = BufReader::new(file);
-        let partial = serde_json::from_reader(reader)?;
+        let json = fs::read(path)?;
+        let partial = serde_json::from_slice(json.as_slice())?;
 
         Ok((profile_name, partial).into())
     }
@@ -83,8 +74,14 @@ impl Display for Profile {
         let name = &self.name;
         let user_name = &self.user_name;
         let user_email = &self.user_email;
+        let home = home();
 
-        write!(f, "name: {name}\nuser_name: {user_name}\nuser_email: {user_email}")
+        write!(f, r#"
+profile name:   {name}
+username:       {user_name}
+email:          {user_email}
+ssh key:        {home}/.ssh/id_{name}
+        "#)
     }
 }
 
