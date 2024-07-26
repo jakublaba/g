@@ -4,7 +4,7 @@ use std::path::Path;
 use git2::{Config, Repository};
 
 use crate::home;
-use crate::profile::profile::{PartialProfile, Profile};
+use crate::profile::profile::Profile;
 
 pub fn configure_user(profile: &Profile, global: bool) {
     let is_inside_repo = is_inside_repo();
@@ -13,13 +13,9 @@ pub fn configure_user(profile: &Profile, global: bool) {
     };
     if global || !is_inside_repo { set_config(profile, true) };
     if is_inside_repo { set_config(profile, false) };
-}
-
-pub fn who_am_i(global: bool) -> Option<PartialProfile> {
-    let is_inside_repo = is_inside_repo();
-    let config = if global || !is_inside_repo { global_config() } else { local_config() }?;
-    
-    PartialProfile::try_from(config).ok()
+    if let Err(_) = Profile::set_active(&profile.name, global) {
+        println!("Can't set '{}' as currently active profile", &profile.name);
+    }
 }
 
 fn set_config(profile: &Profile, global: bool) {
