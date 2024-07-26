@@ -1,20 +1,20 @@
 Don't you hate it when you're interacting with multiple git accounts, forget about it and end up making commits with
 wrong name? \
-g is here to solve that issue, without cumbersome management of custom hosts in you `~/.ssh/config` and switching your
+g is here to solve that issue, without cumbersome management of custom hosts in your `~/.ssh/config` and switching your
 credentials manually each time.
 
 # Prerequisites
 
-- git 2.10 or newer
-- cargo 1.79 or newer
+- git 2.10+
+- openssl 3+
+- cargo 1.79+
 
 # Installation
 
 ```
 cargo install g-rs
 ```
-
-I've had some issues building on arm64 mac and win11, so currently only linux is supported.
+Windows is currently not supported.
 
 # Usage
 
@@ -37,8 +37,8 @@ You can also run this command with `--force` flag to re-generate everything with
 
 ## Inspecting your profiles
 
-You can list all existing g profiles with `g profile list` - it'll show you all the names. \
-To specific settings of a profile, use `g profile show <PROFILE_NAME>`.
+You can list all existing g profiles with `g profile list`. \
+To see settings of a specific profile, use `g profile show <PROFILE_NAME>`.
 
 ## Switching profiles
 
@@ -72,4 +72,4 @@ Currently only ssh-ed25519 keys are supported.
 > Warning: File names matter, if you manually alter them, g won't be able to find them
 
 When switching profiles, g sets `user.name` and `user.email`.
-Authorization is handled by using `core.sshCommand` setting, and because of that git is required.
+Authorization is handled by using `core.sshCommand` setting.
