@@ -13,7 +13,10 @@ pub enum Cmd {
     /// Switch profiles
     Su {
         /// Name of the profile
-        #[arg(value_parser = | name: & str | Profile::read_json(name))]
+        #[arg(
+            value_parser = | name: & str | Profile::read_json(name)
+            .map_err(| _ | format ! ("Profile '{name}' doesn't exist"))
+        )]
         profile: Profile,
         /// Set the profile for global git config
         #[arg(short, long)]
@@ -75,5 +78,14 @@ pub enum ProfileCmd {
         /// Git user email (user.email in gitconfig)
         #[arg(short = 'e', long = "email")]
         user_email: Option<String>,
+    },
+    /// Re-generate keys for an existing profile
+    Regenerate {
+        /// Name of the profile
+        #[arg(
+            value_parser = | name: & str | Profile::read_json(name)
+            .map_err(| _ | format ! ("Profile '{name}' doesn't exist"))
+        )]
+        profile: Profile,
     },
 }
