@@ -6,6 +6,7 @@ use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::git::{configure_user, who_am_i};
 use crate::profile::{add_profile, edit_profile, profile_list, remove_profile, show_profile};
 use crate::profile::profile::Profile;
+use crate::ssh::generate_key_pair;
 
 mod cli;
 mod ssh;
@@ -50,7 +51,9 @@ fn main() {
                         ProfileCmd::Edit { name, user_name, user_email } => {
                             edit_profile(name, user_name, user_email)
                         }
-                        ProfileCmd::Regenerate => {}
+                        ProfileCmd::Regenerate { profile } => {
+                            generate_key_pair(&profile.name, &profile.user_email, true);
+                        }
                     }
                 }
             }
