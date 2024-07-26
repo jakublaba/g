@@ -62,7 +62,7 @@ impl Profile {
     pub fn write_json(self) -> Result<()> {
         let (profile_name, partial) = self.into();
         let path = profile_path(&profile_name);
-        let json = serde_json::to_string(&partial)?;
+        let json = serde_json::to_vec(&partial)?;
         fs::write(&path, json)?;
 
         Ok(())
