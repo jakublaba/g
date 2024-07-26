@@ -3,7 +3,7 @@ use std::env;
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
-use crate::git::{configure_user, who_am_i};
+use crate::git::configure_user;
 use crate::profile::{add_profile, edit_profile, profile_list, remove_profile, show_profile};
 use crate::profile::profile::Profile;
 use crate::ssh::generate_key_pair;
@@ -24,7 +24,7 @@ fn main() {
                 configure_user(&profile, global)
             }
             Cmd::WhoAmI { global } => {
-                if let Some(profile) = who_am_i(global) {
+                if let Some(profile) = Profile::get_active(global) {
                     println!("{profile}");
                 } else {
                     println!("No profile set")
