@@ -14,7 +14,8 @@ credentials manually each time.
 ```
 cargo install g-rs
 ```
-Windows is currently not supported.
+
+> Warning: Windows is currently not supported.
 
 # Usage
 
