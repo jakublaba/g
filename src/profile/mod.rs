@@ -5,6 +5,7 @@ use regex::Regex;
 
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
 use crate::ssh;
+use crate::ssh::key::KeyType;
 use crate::util::rm_file;
 
 pub mod profile;
@@ -45,7 +46,7 @@ pub fn add_profile(profile: Profile, force: bool) {
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
     generate_profile(profile, force);
-    ssh::generate_key_pair(&profile_name, &user_email, force);
+    ssh::generate_key_pair(&profile_name, &user_email, force, KeyType::Ed25519);
 }
 
 fn generate_profile(profile: Profile, force: bool) {
