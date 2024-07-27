@@ -23,6 +23,6 @@ git2 = "0.19.0"
 rand = "0.8.5"
 serde = { version = "1.0.203", features = ["derive"] }
 serde_json = "1.0.120"
-ssh-key = { version = "0.6.6", features = ["ed25519", "std", "alloc"] }
+ssh-key = { version = "0.6.6", features = ["std", "alloc", "dsa", "rsa", "ed25519"] }
 regex = "1.10.5"
 anyhow = "1.0.86"
