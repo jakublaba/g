@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 use crate::profile::profile::Profile;
 
 #[derive(Parser, Debug)]
+#[command(version)]
 pub struct Cli {
     #[clap(subcommand)]
     pub command: Option<Cmd>,
