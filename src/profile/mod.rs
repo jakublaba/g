@@ -42,11 +42,11 @@ pub fn show_profile(profile_name: &str) {
     }
 }
 
-pub fn add_profile(profile: Profile, force: bool) {
+pub fn add_profile(profile: Profile, key_type: KeyType, force: bool) {
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
     generate_profile(profile, force);
-    ssh::generate_key_pair(&profile_name, &user_email, force, KeyType::Ed25519);
+    ssh::generate_key_pair(&profile_name, &user_email, key_type, force);
 }
 
 fn generate_profile(profile: Profile, force: bool) {

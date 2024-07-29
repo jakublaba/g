@@ -10,17 +10,31 @@ use crate::home;
 
 pub(super) const SSH_DIR: &str = ".ssh";
 const DEFAULT_RSA_SIZE: usize = 3072;
-const MIN_RSA_SIZE: usize = 1024;
-const DEFAULT_ECDSA_SIZE: usize = 256;
+const MIN_RSA_SIZE: usize = 2048;
 
 pub(super) trait RandomartHeader {
     fn header(&self) -> String;
 }
 
+#[derive(Debug, Clone)]
 pub enum KeyType {
     Dsa,
     Rsa { size: Option<usize> },
     Ed25519,
+}
+
+impl KeyType {
+    pub fn parse(arg: &str) -> Result<Self> {
+        match arg.to_lowercase().as_str() {
+            "dsa" => Ok(Self::Dsa),
+            s if s.starts_with("rsa") => {
+                let size = (&s[3..s.len()]).parse::<usize>().ok();
+                Ok(Self::Rsa { size })
+            }
+            "ed25519" => Ok(Self::Ed25519),
+            s => Err(anyhow!("Unknown key type: {s}"))
+        }
+    }
 }
 
 impl Display for KeyType {

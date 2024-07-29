@@ -6,7 +6,7 @@ use crate::ssh::key::{KeyType, RandomartHeader};
 
 pub mod key;
 
-pub fn generate_key_pair(profile_name: &str, user_email: &str, force: bool, key_type: KeyType) {
+pub fn generate_key_pair(profile_name: &str, user_email: &str, key_type: KeyType, force: bool) {
     println!("Generating a new ssh-{key_type} key pair");
     let private_path = key::path_private(profile_name);
     let public_path = key::path_public(profile_name);
