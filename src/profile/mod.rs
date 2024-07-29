@@ -71,17 +71,25 @@ pub fn remove_profile(profile_name: &str) {
 }
 
 pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<String>) {
-    let profile_path = profile_path(&name);
-    if !Path::new(&profile_path).exists() {
-        println!("Profile doesn't exist: {name}");
-        return;
-    }
     match Profile::read_json(&name) {
         Ok(mut profile) => {
-            profile.name = name;
-            if let Some(usr_name) = user_name { profile.user_name = usr_name };
-            if let Some(usr_email) = user_email { profile.user_email = usr_email };
+            let user_name_old = profile.user_name.clone();
+            let user_email_old = profile.user_email.clone();
+            let mut width = 0;
+            if let Some(usr_name) = user_name {
+                width = width.max(usr_name.len());
+                profile.user_name = usr_name
+            };
+            if let Some(usr_email) = user_email {
+                width = width.max(usr_email.len());
+                profile.user_email = usr_email
+            };
+            println!("[{name}] username:\t{user_name_old:width$} -> {:width$}", profile.user_name, width = width);
+            println!("[{name}] email:\t\t{user_email_old:width$} -> {:width$}", profile.user_email, width = width);
+            if let Err(e) = profile.write_json() {
+                println!("{e}");
+            }
         }
-        Err(_) => println!("Error reading profile: {profile_path}")
+        Err(_) => println!("Profile '{name}' doesn't exist")
     }
 }
