@@ -37,9 +37,9 @@ impl ActiveProfile {
 
     pub fn read_global() -> Option<Self> {
         let path = active_global_path();
-        let json = fs::read(Path::new(&path)).ok()?;
+        let bytes = fs::read(Path::new(&path)).ok()?;
 
-        serde_json::from_slice(json.as_slice()).ok()
+        bincode::deserialize(&bytes[..]).ok()
     }
 
     pub fn read_local(username: &str, email: &str) -> Option<Self> {
@@ -49,9 +49,9 @@ impl ActiveProfile {
     }
 
     pub fn write_global(self) -> Result<()> {
-        let json = serde_json::to_vec(&self)?;
+        let bytes = bincode::serialize(&self)?;
         let path = active_global_path();
-        fs::write(Path::new(&path), json.as_slice())?;
+        fs::write(Path::new(&path), &bytes[..])?;
 
         Ok(())
     }
@@ -60,8 +60,8 @@ impl ActiveProfile {
         let mut active_profiles = Self::read_local_list()?;
         active_profiles.insert(Self::key(&self.user_name, &self.user_email), self);
         let path = active_local_path();
-        let json = serde_json::to_vec(&active_profiles)?;
-        fs::write(Path::new(&path), json.as_slice())?;
+        let bytes = bincode::serialize(&active_profiles)?;
+        fs::write(Path::new(&path), &bytes[..])?;
 
         Ok(())
     }
@@ -72,8 +72,8 @@ impl ActiveProfile {
         if !path.exists() {
             return Ok(HashMap::new());
         }
-        let json = fs::read(path)?;
-        let active_profiles = serde_json::from_slice(json.as_slice())?;
+        let bytes = fs::read(path)?;
+        let active_profiles = bincode::deserialize(&bytes[..])?;
 
         Ok(active_profiles)
     }

@@ -53,8 +53,8 @@ impl Profile {
 
     pub fn read_json(profile_name: &str) -> Result<Self> {
         let path = profile_path(profile_name);
-        let json = fs::read(path)?;
-        let partial = serde_json::from_slice(json.as_slice())?;
+        let bytes = fs::read(path)?;
+        let partial = bincode::deserialize(&bytes[..])?;
 
         Ok((profile_name, partial).into())
     }
@@ -62,8 +62,8 @@ impl Profile {
     pub fn write_json(self) -> Result<()> {
         let (profile_name, partial) = self.into();
         let path = profile_path(&profile_name);
-        let json = serde_json::to_vec(&partial)?;
-        fs::write(&path, json)?;
+        let bytes = bincode::serialize(&partial)?;
+        fs::write(&path, &bytes[..])?;
 
         Ok(())
     }
