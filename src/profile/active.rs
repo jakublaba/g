@@ -16,7 +16,7 @@ fn active_local_path() -> String {
     format!("{}/.config/g-profiles/.active_local", home())
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub(crate) struct ActiveProfile {
     pub(crate) name: String,
     user_name: String,
@@ -73,6 +73,7 @@ impl ActiveProfile {
             return Ok(HashMap::new());
         }
         let bytes = fs::read(path)?;
+        // this deserialize line errors
         let active_profiles = bincode::deserialize(&bytes[..])?;
 
         Ok(active_profiles)
