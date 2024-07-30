@@ -31,6 +31,8 @@ pub fn configure_user(profile: &Profile, global: bool) {
 }
 
 pub fn whoami(global: bool) -> Option<String> {
+    let is_inside_repo = is_inside_repo();
+    let global = global || !is_inside_repo;
     if global {
         let profile = ActiveProfile::read_global()?;
         Some(profile.name)
