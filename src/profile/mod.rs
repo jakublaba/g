@@ -11,7 +11,7 @@ use crate::util::rm_file;
 pub mod profile;
 pub mod active;
 
-const PROFILE_REGEX: &str = r"g-profiles/(?<prof>.+)\.json";
+const PROFILE_REGEX: &str = r"g-profiles/(?<prof>[^\.]+)$";
 
 pub fn profile_list() -> Vec<String> {
     let profiles_dir = profiles_dir();

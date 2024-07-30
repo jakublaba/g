@@ -17,7 +17,7 @@ pub fn profiles_dir() -> String {
 pub fn profile_path(profile_name: &str) -> String {
     let home = home();
     let profiles_dir = format!("{home}/{PROFILES_DIR}");
-    format!("{profiles_dir}/{profile_name}.json")
+    format!("{profiles_dir}/{profile_name}")
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]

@@ -9,11 +9,11 @@ use serde::{Deserialize, Serialize};
 use crate::home;
 
 fn active_global_path() -> String {
-    format!("{}/.config/g-profiles/active_global", home())
+    format!("{}/.config/g-profiles/.active_global", home())
 }
 
 fn active_local_path() -> String {
-    format!("{}/.config/g-profiles/active_local", home())
+    format!("{}/.config/g-profiles/.active_local", home())
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq)]
