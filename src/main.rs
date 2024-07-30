@@ -44,8 +44,10 @@ fn main() {
                             let profile = Profile::new(name, user_name, user_email);
                             add_profile(profile, key_type, force);
                         }
-                        ProfileCmd::Remove { profile } => {
-                            remove_profile(&profile)
+                        ProfileCmd::Remove { profiles } => {
+                            for p in profiles {
+                                remove_profile(&p);
+                            }
                         }
                         ProfileCmd::Edit { name, user_name, user_email } => {
                             edit_profile(name, user_name, user_email)
