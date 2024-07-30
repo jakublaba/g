@@ -1,8 +1,10 @@
 use clap::{Parser, Subcommand};
 
 use crate::profile::profile::Profile;
+use crate::ssh::key::KeyType;
 
 #[derive(Parser, Debug)]
+#[command(version)]
 pub struct Cli {
     #[clap(subcommand)]
     pub command: Option<Cmd>,
@@ -60,6 +62,12 @@ pub enum ProfileCmd {
         /// Override profile if exists
         #[arg(short, long)]
         force: bool,
+        /// Type of ssh key: dsa, rsa or ed255119 (default)
+        /// To generate rsa key with specific size, use rsa<size>, e.g. rsa4096
+        #[arg(
+            short, long, value_parser = KeyType::parse, default_value = "ed25519", verbatim_doc_comment
+        )]
+        key_type: KeyType,
     },
     /// Remove an existing profile
     Remove {
@@ -87,5 +95,11 @@ pub enum ProfileCmd {
             .map_err(| _ | format ! ("Profile '{name}' doesn't exist"))
         )]
         profile: Profile,
+        /// Type of ssh key: dsa, rsa or ed255119 (default)
+        /// To generate rsa key with specific size, use rsa<size>, e.g. rsa2048
+        #[arg(
+            short, long, value_parser = KeyType::parse, default_value = "ed25519", verbatim_doc_comment
+        )]
+        key_type: KeyType,
     },
 }
