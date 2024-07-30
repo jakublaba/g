@@ -3,7 +3,7 @@ use std::env;
 use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
-use crate::git::configure_user;
+use crate::git::{configure_user, whoami};
 use crate::profile::{add_profile, edit_profile, profile_list, remove_profile, show_profile};
 use crate::profile::profile::Profile;
 
@@ -23,10 +23,10 @@ fn main() {
                 configure_user(&profile, global)
             }
             Cmd::WhoAmI { global } => {
-                if let Some(profile) = Profile::get_active(global) {
+                if let Some(profile) = whoami(global) {
                     println!("{profile}");
                 } else {
-                    println!("No profile set")
+                    println!("No profile set");
                 }
             }
             Cmd::Profile { command } => {

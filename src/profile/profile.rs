@@ -1,8 +1,5 @@
 use std::fmt::{Display, Formatter};
 use std::fs;
-use std::fs::File;
-use std::io::Write;
-use std::path::Path;
 
 use anyhow::Result;
 use git2::Config;
@@ -62,19 +59,6 @@ impl Profile {
         Ok((profile_name, partial).into())
     }
 
-    pub fn get_active(global: bool) -> Option<String> {
-        let active_path = Self::active_path(global);
-        fs::read_to_string(Path::new(&active_path)).ok()
-    }
-
-    pub fn set_active(profile_name: &str, global: bool) -> Result<()> {
-        let active_path = Self::active_path(global);
-        let mut file = File::create(Path::new(&active_path))?;
-        file.write(profile_name.as_bytes())?;
-
-        Ok(())
-    }
-
     pub fn write_json(self) -> Result<()> {
         let (profile_name, partial) = self.into();
         let path = profile_path(&profile_name);
@@ -82,14 +66,6 @@ impl Profile {
         fs::write(&path, json)?;
 
         Ok(())
-    }
-
-    fn active_path(global: bool) -> String {
-        if global {
-            format!("{}/active_global", profiles_dir())
-        } else {
-            format!("{}/active", profiles_dir())
-        }
     }
 }
 

@@ -9,6 +9,8 @@ use crate::ssh::key::KeyType;
 use crate::util::rm_file;
 
 pub mod profile;
+pub mod active;
+
 const PROFILE_REGEX: &str = r"g-profiles/(?<prof>.+)\.json";
 
 pub fn profile_list() -> Vec<String> {
