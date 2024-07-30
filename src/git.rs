@@ -4,6 +4,7 @@ use std::path::Path;
 use git2::{Config, Repository};
 
 use crate::home;
+use crate::profile::active::ActiveProfile;
 use crate::profile::profile::Profile;
 
 pub fn configure_user(profile: &Profile, global: bool) {
@@ -11,21 +12,34 @@ pub fn configure_user(profile: &Profile, global: bool) {
     if !is_inside_repo && !global {
         println!("No git repository detected, setting profile in global config");
     };
-    if global || !is_inside_repo { set_config(profile, true) };
-    if is_inside_repo { set_config(profile, false) };
-    if let Err(_) = Profile::set_active(&profile.name, global) {
-        println!("Can't set '{}' as currently active profile", &profile.name);
-    }
-}
-
-fn set_config(profile: &Profile, global: bool) {
-    let config_result = if global { global_config() } else { local_config() };
-    if let Some(mut config) = config_result {
+    let global = global || !is_inside_repo;
+    if let Some(mut config) = if global { global_config() } else { local_config() } {
+        // Can safely unwrap those because they throw only for invalid git config key
         config.set_str("user.name", &profile.user_name).unwrap();
         config.set_str("user.email", &profile.user_email).unwrap();
         config.set_str("core.sshCommand", &ssh_command(&profile.name)).unwrap();
+        let active_profile = ActiveProfile::new(
+            &profile.name,
+            &profile.user_name,
+            &profile.user_email,
+            env::current_dir().unwrap().to_str().unwrap(),
+        );
+        if global { active_profile.write_global() } else { active_profile.write_local() }.unwrap();
     } else {
-        println!("Can't load {} git config", if global { "global" } else { "local" });
+        println!("Can't load git config");
+    }
+}
+
+pub fn whoami(global: bool) -> Option<String> {
+    if global {
+        let profile = ActiveProfile::read_global()?;
+        Some(profile.name)
+    } else {
+        let config = local_config()?.snapshot().ok()?;
+        let username = config.get_str("user.name").ok()?;
+        let email = config.get_str("user.email").ok()?;
+        let profile = ActiveProfile::read_local(username, email)?;
+        Some(profile.name)
     }
 }
 
