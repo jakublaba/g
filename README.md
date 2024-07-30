@@ -58,19 +58,14 @@ command/subcommand.
 
 # How does it work?
 
-g stores your profiles in `~/.config/g-profiles/`, for example:
-
-```json
-{
-  "name": "John Smith",
-  "email": "john.smith@example.com"
-}
-```
-
-This file is always named `<PROFILE_NAME>.json`.
+g stores your profiles in `~/.config/g-profiles/`.
+Data is serialized to binary for faster read/write speeds and to take up less storage.
+Files there are named the same as profiles.
 Ssh keys related to the profile are stored as `~/.ssh/id_<PROFILE_NAME>` and `~/.ssh/id_<PROFILE_NAME>.pub`.
-Currently only ssh-ed25519 keys are supported.
+Supported ssh key types are: dsa, rsa and ed25519.
 > Warning: File names matter, if you manually alter them, g won't be able to find them
 
-When switching profiles, g sets `user.name` and `user.email`.
-Authorization is handled by using `core.sshCommand` setting.
+When switching profiles, g sets the following in git config:
+
+- `user.name` and `user.email` for git to recognize you
+- `core.sshCommand` for authorization
