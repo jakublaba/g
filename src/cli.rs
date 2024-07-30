@@ -71,9 +71,9 @@ pub enum ProfileCmd {
     },
     /// Remove an existing profile
     Remove {
-        /// Name of the profile
+        /// Name of the profile(s)
         #[arg()]
-        profile: String,
+        profiles: Vec<String>,
     },
     /// Edit an existing profile
     Edit {
