@@ -24,15 +24,16 @@ pub fn get(username: &str, email: &str) -> Option<String> {
     cache.remove(&key)
 }
 
-pub fn remove(username: &str, email: &str) -> Result<()> {
-    let mut cache = load_cache()?;
-    let key = key(username, email);
-    cache.remove(&key);
+pub fn remove(profile_name: &str) -> Result<()> {
+    let cache = load_cache()?
+        .into_iter()
+        .filter(|(_, v)| v != profile_name)
+        .collect::<HashMap<u64, String>>();
+    save_cache(cache)?;
 
-    save_cache(cache)
+    Ok(())
 }
 
-// TODO figure out if there's a way to check if config is a snapshot
 fn key(username: &str, email: &str) -> u64 {
     let mut hasher = DefaultHasher::new();
     username.hash(&mut hasher);
