@@ -4,8 +4,8 @@ use std::path::Path;
 
 use regex::Regex;
 
+use crate::{SafeUnwrap, ssh};
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
-use crate::ssh;
 use crate::ssh::key::KeyType;
 
 pub mod profile;
@@ -57,7 +57,7 @@ pub fn add_profile(profile: Profile, key_type: KeyType, force: bool) {
     let user_email = profile.user_email.clone();
     cache::insert(&profile).unwrap();
     generate_profile(profile, force);
-    ssh::generate_key_pair(&profile_name, &user_email, key_type, force);
+    ssh::generate_key_pair(&profile_name, &user_email, key_type, force).safe_unwrap();
 }
 
 fn generate_profile(profile: Profile, force: bool) {

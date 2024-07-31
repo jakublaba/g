@@ -1,4 +1,5 @@
 use std::env;
+use std::fmt::Display;
 
 use clap::Parser;
 
@@ -52,7 +53,7 @@ fn main() {
                             edit_profile(name, user_name, user_email)
                         }
                         ProfileCmd::Regenerate { profile, key_type } => {
-                            ssh::generate_key_pair(&profile.name, &profile.user_email, key_type, true);
+                            ssh::generate_key_pair(&profile.name, &profile.user_email, key_type, true).safe_unwrap();
                         }
                     }
                 }
@@ -64,4 +65,16 @@ fn main() {
 // TODO could it actually be safe to just evaluate $HOME at compile time?
 pub fn home() -> String {
     env::var("HOME").unwrap()
+}
+
+trait SafeUnwrap {
+    fn safe_unwrap(self);
+}
+
+impl<T, E: Display> SafeUnwrap for Result<T, E> {
+    fn safe_unwrap(self) {
+        if let Err(e) = self {
+            println!("{e}")
+        }
+    }
 }
