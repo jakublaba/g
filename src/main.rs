@@ -11,7 +11,6 @@ mod cli;
 mod ssh;
 mod git;
 mod profile;
-mod util;
 
 // TODO fix error handling
 fn main() {

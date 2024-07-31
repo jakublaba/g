@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::fs;
 use std::path::Path;
 
@@ -6,7 +7,6 @@ use regex::Regex;
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
 use crate::ssh;
 use crate::ssh::key::KeyType;
-use crate::util::rm_file;
 
 pub mod profile;
 pub mod cache;
@@ -104,5 +104,13 @@ pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<
             }
         }
         Err(_) => println!("Profile '{name}' doesn't exist")
+    }
+}
+
+fn rm_file<P: AsRef<Path> + Display>(path: P) {
+    if let Err(_) = fs::remove_file(&path) {
+        println!("Skipping, file doesn't exist: {path}");
+    } else {
+        println!("Removed {path}");
     }
 }
