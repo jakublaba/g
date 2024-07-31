@@ -1,16 +1,17 @@
 use std::fmt::{Display, Formatter};
 use std::path::Path;
 
-use anyhow::{anyhow, Result};
 use rand::thread_rng;
 use ssh_key::{LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::{DsaKeypair, Ed25519Keypair, RsaKeypair};
 
 use crate::home;
+use crate::ssh::error::Error;
+use crate::ssh::Result;
 
 pub(super) const SSH_DIR: &str = ".ssh";
-const DEFAULT_RSA_SIZE: usize = 3072;
-const MIN_RSA_SIZE: usize = 2048;
+pub(super) const DEFAULT_RSA_SIZE: usize = 3072;
+pub(super) const MIN_RSA_SIZE: usize = 2048;
 
 pub(super) trait RandomartHeader {
     fn header(&self) -> String;
@@ -32,7 +33,7 @@ impl KeyType {
                 Ok(Self::Rsa { size })
             }
             "ed25519" => Ok(Self::Ed25519),
-            s => Err(anyhow!("Unknown key type: {s}"))
+            s => Err(Error::UnknownKeyType(s.to_string()))
         }
     }
 }
@@ -83,7 +84,7 @@ pub(super) fn pair(user_email: &str, key_type: &KeyType) -> Result<(PrivateKey, 
         KeyType::Rsa { size } => {
             let size = size.unwrap_or(DEFAULT_RSA_SIZE);
             if size < MIN_RSA_SIZE {
-                Err(anyhow!("Invalid RSA key length: minimum is {MIN_RSA_SIZE} bits"))?
+                Err(Error::InvalidRsaLength(size))?
             }
             KeyPair::Rsa(RsaKeypair::random(&mut rng, size)?)
         }

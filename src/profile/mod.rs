@@ -1,25 +1,31 @@
+use std::fmt::Display;
 use std::fs;
 use std::path::Path;
 
 use regex::Regex;
 
+use crate::{SafeUnwrap, ssh};
+use crate::profile::error::Error;
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
-use crate::ssh;
 use crate::ssh::key::KeyType;
-use crate::util::rm_file;
 
 pub mod profile;
 pub mod cache;
+mod error;
 
 const PROFILE_REGEX: &str = r"g-profiles/(?<prof>[^\.]+)$";
 
+type Result<T> = std::result::Result<T, error::Error>;
+
+// TODO decouple this shit
 pub fn profile_list() -> Vec<String> {
     let profiles_dir = profiles_dir();
     let paths = fs::read_dir(&profiles_dir);
     let regex = Regex::new(PROFILE_REGEX).unwrap();
     return match paths {
         Ok(paths) => {
-            paths.map(Result::unwrap)
+            // TODO there must be a way to clean up whatever the fuck is going on with this iterator
+            paths.map(|r| r.unwrap())
                 .map(|p| p.path())
                 .map(|p| p.to_str().unwrap().to_string())
                 .filter(|p| regex.is_match(p))
@@ -36,31 +42,27 @@ pub fn profile_list() -> Vec<String> {
     };
 }
 
-pub fn show_profile(profile_name: &str) {
-    if let Ok(profile) = Profile::read_json(profile_name) {
-        println!("{profile}");
-    } else {
-        println!("Profile '{profile_name}' not found");
-    }
-}
-
-pub fn add_profile(profile: Profile, key_type: KeyType, force: bool) {
-    if profile.name.starts_with('.') {
-        println!("Profile name cannot start with '.'");
-        return;
+pub fn add_profile(profile: Profile, key_type: KeyType, force: bool) -> Result<()> {
+    if profile.name.contains('.') {
+        Err(Error::InvalidName)?;
     }
     if let Some(p) = cache::get(&profile.user_name, &profile.user_email) {
-        println!("Profile with this combination of username/email already exists: {p}");
-        return;
+        Err(Error::CombinationExists {
+            username: (&profile.user_name).to_string(),
+            email: (&profile.user_email).to_string(),
+            existing_profile: p,
+        })?;
     }
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
     cache::insert(&profile).unwrap();
-    generate_profile(profile, force);
-    ssh::generate_key_pair(&profile_name, &user_email, key_type, force);
+    generate_profile(profile, force)?;
+    ssh::generate_key_pair(&profile_name, &user_email, key_type, force).safe_unwrap();
+
+    Ok(())
 }
 
-fn generate_profile(profile: Profile, force: bool) {
+fn generate_profile(profile: Profile, force: bool) -> Result<()> {
     let profile_path = profile_path(&profile.name);
     if Path::new(&profile_path).exists() && !force {
         println!("Profile '{}' already exists, if you want to override it, re-run with --force", &profile.name);
@@ -69,40 +71,44 @@ fn generate_profile(profile: Profile, force: bool) {
         if !Path::new(&profiles_dir).exists() {
             fs::create_dir_all(profiles_dir).unwrap();
         }
-        if let Err(_) = profile.write_json() {
-            println!("Cannot write profile: {profile_path}");
-        }
+        profile.write_json()?;
         println!("Profile written");
     }
+
+    Ok(())
 }
 
-pub fn remove_profile(profile_name: &str) {
+pub fn remove_profile(profile_name: &str) -> Result<()> {
     rm_file(profile_path(profile_name));
     rm_file(ssh::key::path_private(profile_name));
     rm_file(ssh::key::path_public(profile_name));
-    cache::remove(profile_name).unwrap();
+
+    cache::remove(profile_name)
 }
 
-pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<String>) {
-    match Profile::read_json(&name) {
-        Ok(mut profile) => {
-            let user_name_old = profile.user_name.clone();
-            let user_email_old = profile.user_email.clone();
-            let mut width = 0;
-            if let Some(usr_name) = user_name {
-                width = width.max(usr_name.len());
-                profile.user_name = usr_name
-            };
-            if let Some(usr_email) = user_email {
-                width = width.max(usr_email.len());
-                profile.user_email = usr_email
-            };
-            println!("[{name}] username:\t{user_name_old:width$} -> {:width$}", profile.user_name, width = width);
-            println!("[{name}] email:\t\t{user_email_old:width$} -> {:width$}", profile.user_email, width = width);
-            if let Err(e) = profile.write_json() {
-                println!("{e}");
-            }
-        }
-        Err(_) => println!("Profile '{name}' doesn't exist")
+pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<String>) -> Result<()> {
+    let mut profile = Profile::read_json(&name)?;
+    let user_name_old = profile.user_name.clone();
+    let user_email_old = profile.user_email.clone();
+    let mut width = 0;
+    if let Some(usr_name) = user_name {
+        width = width.max(usr_name.len());
+        profile.user_name = usr_name
+    };
+    if let Some(usr_email) = user_email {
+        width = width.max(usr_email.len());
+        profile.user_email = usr_email
+    };
+    println!("[{name}] username:\t{user_name_old:width$} -> {:width$}", profile.user_name, width = width);
+    println!("[{name}] email:\t\t{user_email_old:width$} -> {:width$}", profile.user_email, width = width);
+
+    profile.write_json()
+}
+
+fn rm_file<P: AsRef<Path> + Display>(path: P) {
+    if let Err(_) = fs::remove_file(&path) {
+        println!("Skipping, file doesn't exist: {path}");
+    } else {
+        println!("Removed {path}");
     }
 }
