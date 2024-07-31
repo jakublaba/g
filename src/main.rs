@@ -20,7 +20,7 @@ fn main() {
     if let Some(cmd) = cli.command {
         match cmd {
             Cmd::Su { profile, global } => {
-                configure_user(&profile, global)
+                configure_user(&profile, global).safe_unwrap();
             }
             Cmd::WhoAmI { global } => {
                 if let Some(profile) = whoami(global) {
@@ -29,8 +29,8 @@ fn main() {
                     println!("No profile set");
                 }
             }
-            Cmd::Profile { command } => {
-                if let Some(prof_cmd) = command {
+            Cmd::Profile { command: prof_cmd } => {
+                if let Some(prof_cmd) = prof_cmd {
                     match prof_cmd {
                         ProfileCmd::List => {
                             for profile in profile_list() {
