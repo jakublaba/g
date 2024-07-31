@@ -12,8 +12,7 @@ pub fn insert(git_config: &Config, profile_name: &str) -> Result<()> {
     let mut cache = load_cache()?;
     let key = key(git_config);
     cache.insert(key, profile_name.to_string());
-    let bytes = bincode::serialize(&cache)?;
-    fs::write(&cache_path(), &bytes[..])?;
+    save_cache(cache)?;
 
     Ok(())
 }
@@ -23,6 +22,14 @@ pub fn get(git_config: &Config) -> Option<String> {
     let key = key(git_config);
 
     cache.remove(&key)
+}
+
+pub fn remove(git_config: &Config) -> Result<()> {
+    let mut cache = load_cache()?;
+    let key = key(git_config);
+    cache.remove(&key);
+
+    save_cache(cache)
 }
 
 // TODO figure out if there's a way to check if config is a snapshot
@@ -50,6 +57,11 @@ fn load_cache() -> Result<HashMap<u64, String>> {
     let cache = bincode::deserialize(&bytes[..])?;
 
     Ok(cache)
+}
+
+fn save_cache(cache: HashMap<u64, String>) -> Result<()> {
+    let bytes = bincode::serialize(&cache)?;
+    fs::write(&cache_path(), &bytes[..])?;
 }
 
 fn cache_path() -> String {

@@ -71,6 +71,7 @@ pub fn remove_profile(profile_name: &str) {
     rm_file(profile_path(profile_name));
     rm_file(ssh::key::path_private(profile_name));
     rm_file(ssh::key::path_public(profile_name));
+    // TODO wipe profile from cache also
 }
 
 pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<String>) {
