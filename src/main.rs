@@ -5,7 +5,7 @@ use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::git::{configure_user, whoami};
-use crate::profile::{add_profile, edit_profile, profile_list, remove_profile, show_profile};
+use crate::profile::{add_profile, edit_profile, profile_list, remove_profile};
 use crate::profile::profile::Profile;
 
 mod cli;
@@ -38,19 +38,22 @@ fn main() {
                             }
                         }
                         ProfileCmd::Show { name } => {
-                            show_profile(&name);
+                            match Profile::read_json(&name) {
+                                Ok(p) => println!("{p}"),
+                                Err(e) => println!("{e}"),
+                            }
                         }
                         ProfileCmd::Add { name, user_name, user_email, force, key_type } => {
                             let profile = Profile::new(name, user_name, user_email);
-                            add_profile(profile, key_type, force);
+                            add_profile(profile, key_type, force).safe_unwrap();
                         }
                         ProfileCmd::Remove { profiles } => {
                             for p in profiles {
-                                remove_profile(&p);
+                                remove_profile(&p).safe_unwrap();
                             }
                         }
                         ProfileCmd::Edit { name, user_name, user_email } => {
-                            edit_profile(name, user_name, user_email)
+                            edit_profile(name, user_name, user_email).safe_unwrap();
                         }
                         ProfileCmd::Regenerate { profile, key_type } => {
                             ssh::generate_key_pair(&profile.name, &profile.user_email, key_type, true).safe_unwrap();
@@ -67,11 +70,12 @@ pub fn home() -> String {
     env::var("HOME").unwrap()
 }
 
+// TODO should this stay in main?
 trait SafeUnwrap {
     fn safe_unwrap(self);
 }
 
-impl<T, E: Display> SafeUnwrap for Result<T, E> {
+impl<E: Display> SafeUnwrap for Result<(), E> {
     fn safe_unwrap(self) {
         if let Err(e) = self {
             println!("{e}")

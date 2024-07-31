@@ -1,11 +1,10 @@
 use std::fmt::{Display, Formatter};
 use std::fs;
 
-use anyhow::Result;
-use git2::Config;
 use serde::{Deserialize, Serialize};
 
 use crate::home;
+use crate::profile::Result;
 
 const PROFILES_DIR: &str = ".config/g-profiles";
 
@@ -28,22 +27,11 @@ pub struct Profile {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct PartialProfile {
+struct PartialProfile {
     #[serde(rename = "name")]
     user_name: String,
     #[serde(rename = "email")]
     user_email: String,
-}
-
-impl TryFrom<Config> for PartialProfile {
-    type Error = git2::Error;
-
-    fn try_from(config: Config) -> std::result::Result<Self, Self::Error> {
-        let user_name = config.get_string("user.name")?;
-        let user_email = config.get_string("user.email")?;
-
-        Ok(Self { user_name, user_email })
-    }
 }
 
 impl Profile {

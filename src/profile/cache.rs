@@ -3,10 +3,9 @@ use std::fs;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::path::Path;
 
-use anyhow::Result;
-
 use crate::home;
 use crate::profile::profile::Profile;
+use crate::profile::Result;
 
 pub fn insert(profile: &Profile) -> Result<()> {
     let mut cache = load_cache()?;
