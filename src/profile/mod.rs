@@ -45,6 +45,10 @@ pub fn show_profile(profile_name: &str) {
 }
 
 pub fn add_profile(profile: Profile, key_type: KeyType, force: bool) {
+    if profile.name.starts_with('.') {
+        println!("Profile name cannot start with '.'");
+        return;
+    }
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
     cache::insert(&profile).unwrap();
