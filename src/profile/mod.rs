@@ -47,6 +47,7 @@ pub fn show_profile(profile_name: &str) {
 pub fn add_profile(profile: Profile, key_type: KeyType, force: bool) {
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
+    cache::insert(&profile).unwrap();
     generate_profile(profile, force);
     ssh::generate_key_pair(&profile_name, &user_email, key_type, force);
 }

@@ -17,7 +17,6 @@ pub fn configure_user(profile: &Profile, global: bool) {
         config.set_str("user.name", &profile.user_name).unwrap();
         config.set_str("user.email", &profile.user_email).unwrap();
         config.set_str("core.sshCommand", &ssh_command(&profile.name)).unwrap();
-        profile::cache::insert(&profile).unwrap();
     } else {
         println!("Can't load git config");
     }
