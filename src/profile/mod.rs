@@ -9,7 +9,7 @@ use crate::ssh::key::KeyType;
 use crate::util::rm_file;
 
 pub mod profile;
-pub mod active;
+pub mod cache;
 
 const PROFILE_REGEX: &str = r"g-profiles/(?<prof>[^\.]+)$";
 

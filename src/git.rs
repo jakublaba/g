@@ -3,8 +3,7 @@ use std::path::Path;
 
 use git2::{Config, Repository};
 
-use crate::home;
-use crate::profile::active::ActiveProfile;
+use crate::{home, profile};
 use crate::profile::profile::Profile;
 
 pub fn configure_user(profile: &Profile, global: bool) {
@@ -18,13 +17,7 @@ pub fn configure_user(profile: &Profile, global: bool) {
         config.set_str("user.name", &profile.user_name).unwrap();
         config.set_str("user.email", &profile.user_email).unwrap();
         config.set_str("core.sshCommand", &ssh_command(&profile.name)).unwrap();
-        let active_profile = ActiveProfile::new(
-            &profile.name,
-            &profile.user_name,
-            &profile.user_email,
-            env::current_dir().unwrap().to_str().unwrap(),
-        );
-        if global { active_profile.write_global() } else { active_profile.write_local() }.unwrap();
+        profile::cache::insert(&config.snapshot().unwrap(), &profile.name).unwrap();
     } else {
         println!("Can't load git config");
     }
@@ -33,16 +26,9 @@ pub fn configure_user(profile: &Profile, global: bool) {
 pub fn whoami(global: bool) -> Option<String> {
     let is_inside_repo = is_inside_repo();
     let global = global || !is_inside_repo;
-    if global {
-        let profile = ActiveProfile::read_global()?;
-        Some(profile.name)
-    } else {
-        let config = local_config()?.snapshot().ok()?;
-        let username = config.get_str("user.name").ok()?;
-        let email = config.get_str("user.email").ok()?;
-        let profile = ActiveProfile::read_local(username, email)?;
-        Some(profile.name)
-    }
+    let mut config = if global { global_config() } else { local_config() }?;
+
+    profile::cache::get(&config.snapshot().unwrap())
 }
 
 fn is_inside_repo() -> bool {
