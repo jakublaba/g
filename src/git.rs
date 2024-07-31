@@ -17,7 +17,7 @@ pub fn configure_user(profile: &Profile, global: bool) {
         config.set_str("user.name", &profile.user_name).unwrap();
         config.set_str("user.email", &profile.user_email).unwrap();
         config.set_str("core.sshCommand", &ssh_command(&profile.name)).unwrap();
-        profile::cache::insert(&config.snapshot().unwrap(), &profile.name).unwrap();
+        profile::cache::insert(&profile).unwrap();
     } else {
         println!("Can't load git config");
     }
@@ -26,9 +26,11 @@ pub fn configure_user(profile: &Profile, global: bool) {
 pub fn whoami(global: bool) -> Option<String> {
     let is_inside_repo = is_inside_repo();
     let global = global || !is_inside_repo;
-    let mut config = if global { global_config() } else { local_config() }?;
+    let config = if global { global_config() } else { local_config() }?.snapshot().ok()?;
+    let username = config.get_str("user.name").ok()?;
+    let email = config.get_str("user.email").ok()?;
 
-    profile::cache::get(&config.snapshot().unwrap())
+    profile::cache::get(username, email)
 }
 
 fn is_inside_repo() -> bool {
