@@ -49,6 +49,10 @@ pub fn add_profile(profile: Profile, key_type: KeyType, force: bool) {
         println!("Profile name cannot start with '.'");
         return;
     }
+    if let Some(p) = cache::get(&profile.user_name, &profile.user_email) {
+        println!("Profile with this combination of username/email already exists: {p}");
+        return;
+    }
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
     cache::insert(&profile).unwrap();
