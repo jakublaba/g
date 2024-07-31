@@ -9,9 +9,9 @@ use crate::ssh::key::KeyType;
 use crate::util::rm_file;
 
 pub mod profile;
-pub mod active;
+pub mod cache;
 
-const PROFILE_REGEX: &str = r"g-profiles/(?<prof>.+)\.json";
+const PROFILE_REGEX: &str = r"g-profiles/(?<prof>[^\.]+)$";
 
 pub fn profile_list() -> Vec<String> {
     let profiles_dir = profiles_dir();
@@ -45,8 +45,13 @@ pub fn show_profile(profile_name: &str) {
 }
 
 pub fn add_profile(profile: Profile, key_type: KeyType, force: bool) {
+    if profile.name.starts_with('.') {
+        println!("Profile name cannot start with '.'");
+        return;
+    }
     let profile_name = profile.name.clone();
     let user_email = profile.user_email.clone();
+    cache::insert(&profile).unwrap();
     generate_profile(profile, force);
     ssh::generate_key_pair(&profile_name, &user_email, key_type, force);
 }
@@ -71,6 +76,7 @@ pub fn remove_profile(profile_name: &str) {
     rm_file(profile_path(profile_name));
     rm_file(ssh::key::path_private(profile_name));
     rm_file(ssh::key::path_public(profile_name));
+    cache::remove(profile_name).unwrap();
 }
 
 pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<String>) {

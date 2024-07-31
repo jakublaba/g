@@ -62,6 +62,7 @@ fn main() {
     };
 }
 
+// TODO could it actually be safe to just evaluate $HOME at compile time?
 pub fn home() -> String {
     env::var("HOME").unwrap()
 }
