@@ -4,13 +4,14 @@ use std::path::Path;
 use git2::Config;
 
 use crate::{home, profile};
+use crate::git::error::Error;
 use crate::profile::profile::Profile;
 
 type Result<T> = std::result::Result<T, error::Error>;
 pub mod error;
 
 pub fn configure_user(profile: &Profile, global: bool) -> Result<()> {
-    let is_inside_repo = is_inside_repo()?;
+    let is_inside_repo = is_inside_repo();
     if !is_inside_repo && !global {
         println!("No git repository detected, setting profile in global config");
     };
@@ -24,9 +25,19 @@ pub fn configure_user(profile: &Profile, global: bool) -> Result<()> {
     Ok(())
 }
 
+pub fn get_username_and_email(global: bool) -> Result<(String, String)> {
+    let global = global || !is_inside_repo();
+    let config = config(global)?;
+    let username = config.get_string("user.name")
+        .map_err(|_| Error::EmptyProperty("user.name".to_string()))?;
+    let email = config.get_string("user.email")
+        .map_err(|_| Error::EmptyProperty("user.email".to_string()))?;
+
+    Ok((username, email))
+}
+
 pub fn whoami(global: bool) -> Option<String> {
-    let is_inside_repo = is_inside_repo().ok()?;
-    let global = global || !is_inside_repo;
+    let global = global || !is_inside_repo();
     let config = config(global).ok()?;
     let username = config.get_str("user.name").ok()?;
     let email = config.get_str("user.email").ok()?;
@@ -34,12 +45,12 @@ pub fn whoami(global: bool) -> Option<String> {
     profile::cache::get(username, email)
 }
 
-pub(crate) fn is_inside_repo() -> Result<bool> {
-    let current_dir = env::current_dir()?;
+pub(crate) fn is_inside_repo() -> bool {
+    let current_dir = env::current_dir().unwrap();
     let path_str = format!("{}/.git", current_dir.to_str().unwrap());
     let path = Path::new(&path_str);
 
-    Ok(path.exists() && path.is_dir())
+    path.exists() && path.is_dir()
 }
 
 pub(crate) fn config(global: bool) -> Result<Config> {

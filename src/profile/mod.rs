@@ -4,10 +4,11 @@ use std::path::Path;
 
 use regex::Regex;
 
-use crate::{SafeUnwrap, ssh};
 use crate::profile::error::Error;
 use crate::profile::profile::{Profile, profile_path, profiles_dir};
+use crate::ssh;
 use crate::ssh::key::KeyType;
+use crate::util::SafeUnwrap;
 
 pub mod profile;
 pub mod cache;
@@ -17,8 +18,7 @@ const PROFILE_REGEX: &str = r"g-profiles/(?<prof>[^\.]+)$";
 
 type Result<T> = std::result::Result<T, error::Error>;
 
-// TODO decouple this shit
-pub fn profile_list() -> Vec<String> {
+pub fn load_profile_list() -> Vec<String> {
     let profiles_dir = profiles_dir();
     let paths = fs::read_dir(&profiles_dir);
     let regex = Regex::new(PROFILE_REGEX).unwrap();
@@ -42,10 +42,14 @@ pub fn profile_list() -> Vec<String> {
     };
 }
 
-pub fn add_profile(profile: Profile, key_type: KeyType, force: bool) -> Result<()> {
-    if profile.name.contains('.') {
-        Err(Error::InvalidName)?;
-    }
+pub fn add_profile(
+    name: String,
+    username: String,
+    email: String,
+    key_type: KeyType,
+    force: bool,
+) -> Result<()> {
+    let profile = Profile::new(name, username, email)?;
     if let Some(p) = cache::get(&profile.user_name, &profile.user_email) {
         Err(Error::CombinationExists {
             username: (&profile.user_name).to_string(),

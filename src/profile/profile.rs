@@ -4,6 +4,7 @@ use std::fs;
 use serde::{Deserialize, Serialize};
 
 use crate::home;
+use crate::profile::error::Error;
 use crate::profile::Result;
 
 const PROFILES_DIR: &str = ".config/g-profiles";
@@ -35,8 +36,11 @@ struct PartialProfile {
 }
 
 impl Profile {
-    pub fn new(name: String, user_name: String, user_email: String) -> Self {
-        Self { name, user_name, user_email }
+    pub fn new(name: String, user_name: String, user_email: String) -> Result<Self> {
+        if name.contains('.') {
+            Err(Error::InvalidName)?
+        }
+        Ok(Self { name, user_name, user_email })
     }
 
     pub fn read_json(profile_name: &str) -> Result<Self> {

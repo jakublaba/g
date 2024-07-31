@@ -11,7 +11,7 @@ pub mod pres;
 #[command(version)]
 pub struct Cli {
     #[clap(subcommand)]
-    pub command: Option<Cmd>,
+    pub command: Cmd,
 }
 
 #[derive(Subcommand, Debug)]
@@ -38,7 +38,7 @@ pub enum Cmd {
     /// Manage profiles
     Profile {
         #[clap(subcommand)]
-        command: Option<ProfileCmd>,
+        command: ProfileCmd,
     },
 }
 
