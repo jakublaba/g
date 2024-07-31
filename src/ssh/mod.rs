@@ -5,7 +5,7 @@ use ssh_key::HashAlg;
 use crate::ssh::key::{KeyType, RandomartHeader};
 
 pub mod key;
-mod error;
+pub mod error;
 
 type Result<T> = std::result::Result<T, error::Error>;
 

@@ -3,6 +3,10 @@ use clap::{Parser, Subcommand};
 use crate::profile::profile::Profile;
 use crate::ssh::key::KeyType;
 
+type Result<T> = std::result::Result<T, error::Error>;
+mod error;
+pub mod pres;
+
 #[derive(Parser, Debug)]
 #[command(version)]
 pub struct Cli {

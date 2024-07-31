@@ -11,7 +11,7 @@ use crate::ssh::key::KeyType;
 
 pub mod profile;
 pub mod cache;
-mod error;
+pub mod error;
 
 const PROFILE_REGEX: &str = r"g-profiles/(?<prof>[^\.]+)$";
 

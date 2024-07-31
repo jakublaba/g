@@ -7,7 +7,7 @@ use crate::{home, profile};
 use crate::profile::profile::Profile;
 
 type Result<T> = std::result::Result<T, error::Error>;
-mod error;
+pub mod error;
 
 pub fn configure_user(profile: &Profile, global: bool) -> Result<()> {
     let is_inside_repo = is_inside_repo()?;
@@ -34,7 +34,7 @@ pub fn whoami(global: bool) -> Option<String> {
     profile::cache::get(username, email)
 }
 
-fn is_inside_repo() -> Result<bool> {
+pub(crate) fn is_inside_repo() -> Result<bool> {
     let current_dir = env::current_dir()?;
     let path_str = format!("{}/.git", current_dir.to_str().unwrap());
     let path = Path::new(&path_str);
@@ -42,7 +42,7 @@ fn is_inside_repo() -> Result<bool> {
     Ok(path.exists() && path.is_dir())
 }
 
-fn config(global: bool) -> Result<Config> {
+pub(crate) fn config(global: bool) -> Result<Config> {
     let config = if global {
         Config::open_default()?
     } else {
@@ -53,7 +53,7 @@ fn config(global: bool) -> Result<Config> {
     Ok(config)
 }
 
-fn ssh_command(profile_name: &str) -> String {
+pub(crate) fn ssh_command(profile_name: &str) -> String {
     let home = home();
     format!("ssh -i {home}/.ssh/id_{profile_name} -F /dev/null")
 }
