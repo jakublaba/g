@@ -5,7 +5,7 @@ use clap::Parser;
 
 use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::git::{configure_user, whoami};
-use crate::profile::{add_profile, edit_profile, load_profile_list, remove_profile};
+use crate::profile::{add, edit, load_profile_list, remove};
 use crate::profile::profile::Profile;
 use crate::util::SafeUnwrap;
 
@@ -43,16 +43,16 @@ fn main() {
                         Err(e) => println!("{e}"),
                     }
                 }
-                ProfileCmd::Add { name, user_name, email: user_email, force, key_type } => {
-                    add_profile(name, user_name, user_email, key_type, force).safe_unwrap();
+                ProfileCmd::Add { name, username, email, key_type, force } => {
+                    add(name, username, email, key_type, force).safe_unwrap();
                 }
                 ProfileCmd::Remove { profiles } => {
                     for p in profiles {
-                        remove_profile(&p).safe_unwrap();
+                        remove(&p).safe_unwrap();
                     }
                 }
                 ProfileCmd::Edit { name, username: user_name, email: user_email } => {
-                    edit_profile(name, user_name, user_email).safe_unwrap();
+                    edit(name, user_name, user_email).safe_unwrap();
                 }
                 ProfileCmd::Regenerate { profile, key_type } => {
                     ssh::generate_key_pair(&profile.name, &profile.email, key_type, true).safe_unwrap();

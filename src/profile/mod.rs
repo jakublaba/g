@@ -42,14 +42,14 @@ pub fn load_profile_list() -> Vec<String> {
     };
 }
 
-pub fn add_profile(
+pub fn add(
     name: String,
     username: String,
     email: String,
     key_type: KeyType,
     force: bool,
 ) -> Result<()> {
-    let profile = Profile::new(name, username, email)?;
+    let profile = Profile::new(&name, &username, &email)?;
     if let Some(p) = cache::get(&profile.username, &profile.email) {
         Err(Error::CombinationExists {
             username: (&profile.username).to_string(),
@@ -60,37 +60,22 @@ pub fn add_profile(
     let profile_name = profile.name.clone();
     let user_email = profile.email.clone();
     cache::insert(&profile).unwrap();
-    generate_profile(profile, force)?;
+    generate(profile, force)?;
     ssh::generate_key_pair(&profile_name, &user_email, key_type, force).safe_unwrap();
 
     Ok(())
 }
 
-fn generate_profile(profile: Profile, force: bool) -> Result<()> {
-    let profile_path = profile_path(&profile.name);
-    if Path::new(&profile_path).exists() && !force {
-        println!("Profile '{}' already exists, if you want to override it, re-run with --force", &profile.name);
-    } else {
-        let profiles_dir = profiles_dir();
-        if !Path::new(&profiles_dir).exists() {
-            fs::create_dir_all(profiles_dir).unwrap();
-        }
-        profile.write()?;
-        println!("Profile written");
-    }
 
-    Ok(())
+pub fn remove(name: &str) -> Result<()> {
+    rm_file(profile_path(name));
+    rm_file(ssh::key::path_private(name));
+    rm_file(ssh::key::path_public(name));
+
+    cache::remove(name)
 }
 
-pub fn remove_profile(profile_name: &str) -> Result<()> {
-    rm_file(profile_path(profile_name));
-    rm_file(ssh::key::path_private(profile_name));
-    rm_file(ssh::key::path_public(profile_name));
-
-    cache::remove(profile_name)
-}
-
-pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<String>) -> Result<()> {
+pub fn edit(name: String, user_name: Option<String>, user_email: Option<String>) -> Result<()> {
     let mut profile = Profile::read(&name)?;
     let user_name_old = profile.username.clone();
     let user_email_old = profile.email.clone();
@@ -107,6 +92,21 @@ pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<
     println!("[{name}] email:\t\t{user_email_old:width$} -> {:width$}", profile.email, width = width);
 
     profile.write()
+}
+fn generate(profile: Profile, force: bool) -> Result<()> {
+    let profile_path = profile_path(&profile.name);
+    if Path::new(&profile_path).exists() && !force {
+        println!("Profile '{}' already exists, if you want to override it, re-run with --force", &profile.name);
+    } else {
+        let profiles_dir = profiles_dir();
+        if !Path::new(&profiles_dir).exists() {
+            fs::create_dir_all(profiles_dir).unwrap();
+        }
+        profile.write()?;
+        println!("Profile written");
+    }
+
+    Ok(())
 }
 
 fn rm_file<P: AsRef<Path> + Display>(path: P) {

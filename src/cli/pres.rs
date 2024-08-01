@@ -1,8 +1,11 @@
 use std::fmt::Display;
 
+use ssh_key::HashAlg;
+
 use crate::{git, profile, ssh};
 use crate::cli::{Cmd, ProfileCmd};
 use crate::profile::profile::Profile;
+use crate::ssh::key::RandomartHeader;
 use crate::util::{SafeUnwrap, UnwrapWithTip};
 
 pub trait Execute {
@@ -61,15 +64,34 @@ impl Execute for ProfileCmd {
                         result
                             .unwrap_with_tip("re-run with --force to re-generate");
                         if is_err { return; }
-                        todo!(handle unwrap somehow)
-                        let (private, public) = ssh::key::pair(&email, &key_type);
+                        match ssh::key::pair(&email, &key_type) {
+                            Err(err) => println!("{err}"),
+                            Ok((private, public)) => {
+                                println!("Generating ssh-{key_type} key pair...");
+                                ssh::key::write_private(&name, &private).safe_unwrap();
+                                ssh::key::write_public(&name, &public).safe_unwrap();
+                                println!("Keys written");
+                                let fingerprint = private.fingerprint(HashAlg::Sha256);
+                                let random_art = fingerprint.to_randomart(&key_type.header());
+                                println!("Key fingerprint is: {fingerprint}");
+                                println!("The key's randomart image is:\n{random_art}");
+                            }
+                        }
                     }
                     Err(err) => println!("{err}")
                 }
             }
-            ProfileCmd::Remove { .. } => {}
-            ProfileCmd::Edit { .. } => {}
-            ProfileCmd::Regenerate { .. } => {}
+            ProfileCmd::Remove { profiles } => {
+                for p in &profiles {
+                    profile::remove(p).safe_unwrap()
+                }
+            }
+            ProfileCmd::Edit { name, username, email } => {
+                profile::edit(name, username, email).safe_unwrap();
+            }
+            ProfileCmd::Regenerate { .. } => {
+                // TODO replace this command with flag for `profile edit`
+            }
         }
     }
 }

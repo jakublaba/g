@@ -13,7 +13,7 @@ pub(super) const SSH_DIR: &str = ".ssh";
 pub(super) const DEFAULT_RSA_SIZE: usize = 3072;
 pub(super) const MIN_RSA_SIZE: usize = 2048;
 
-pub(super) trait RandomartHeader {
+pub trait RandomartHeader {
     fn header(&self) -> String;
 }
 
@@ -108,12 +108,12 @@ pub(super) fn public_from_private(profile_name: &str, user_email: &str) -> Resul
         .into()
 }
 
-pub(super) fn write_private(profile_name: &str, key: &PrivateKey) -> Result<()> {
+pub fn write_private(profile_name: &str, key: &PrivateKey) -> Result<()> {
     let key_path = path_private(profile_name);
     key.write_openssh_file(Path::new(&key_path), LineEnding::LF).into()
 }
 
-pub(super) fn write_public(profile_name: &str, key: &PublicKey) -> Result<()> {
+pub fn write_public(profile_name: &str, key: &PublicKey) -> Result<()> {
     let key_path = path_public(profile_name);
     key.write_openssh_file(Path::new(&key_path)).into()
 }
