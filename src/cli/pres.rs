@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use ssh_key::HashAlg;
 
 use crate::{git, profile, ssh};

@@ -1,11 +1,9 @@
 use std::env;
-use std::fmt::Display;
 
 use clap::Parser;
 
 use crate::cli::Cli;
 use crate::cli::pres::Execute;
-use crate::util::SafeUnwrap;
 
 mod cli;
 mod ssh;

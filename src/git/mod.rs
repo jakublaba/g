@@ -3,8 +3,8 @@ use std::path::Path;
 
 use git2::Config;
 
-use crate::{home, profile};
 use crate::git::error::Error;
+use crate::home;
 use crate::profile::profile::Profile;
 
 type Result<T> = std::result::Result<T, error::Error>;
@@ -34,15 +34,6 @@ pub fn get_username_and_email(global: bool) -> Result<(String, String)> {
         .map_err(|_| Error::EmptyProperty("user.email".to_string()))?;
 
     Ok((username, email))
-}
-
-pub fn whoami(global: bool) -> Option<String> {
-    let global = global || !is_inside_repo();
-    let config = config(global).ok()?;
-    let username = config.get_str("user.name").ok()?;
-    let email = config.get_str("user.email").ok()?;
-
-    profile::cache::get(username, email)
 }
 
 pub(crate) fn is_inside_repo() -> bool {
