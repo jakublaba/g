@@ -93,6 +93,7 @@ pub fn edit(name: String, user_name: Option<String>, user_email: Option<String>)
 
     profile.write()
 }
+
 fn generate(profile: Profile, force: bool) -> Result<()> {
     let profile_path = profile_path(&profile.name);
     if Path::new(&profile_path).exists() && !force {

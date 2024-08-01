@@ -105,17 +105,19 @@ pub(super) fn public_from_private(profile_name: &str, user_email: &str) -> Resul
             public.set_comment(user_email);
             public
         })
-        .into()
+        .map_err(|e| e.into())
 }
 
 pub fn write_private(profile_name: &str, key: &PrivateKey) -> Result<()> {
     let key_path = path_private(profile_name);
-    key.write_openssh_file(Path::new(&key_path), LineEnding::LF).into()
+    key.write_openssh_file(Path::new(&key_path), LineEnding::LF)
+        .map_err(|e| e.into())
 }
 
 pub fn write_public(profile_name: &str, key: &PublicKey) -> Result<()> {
     let key_path = path_public(profile_name);
-    key.write_openssh_file(Path::new(&key_path)).into()
+    key.write_openssh_file(Path::new(&key_path))
+        .map_err(|e| e.into())
 }
 
 pub(crate) fn path_private(profile_name: &str) -> String {

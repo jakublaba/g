@@ -41,23 +41,12 @@ impl Profile {
         if name.contains('.') {
             Err(Error::InvalidName)?
         }
-        cache::get(&username, &email)
-            .map_or_else(
-                || {
-                    let (name, username, email) = (
-                        name.to_string(),
-                        username.to_string(),
-                        email.to_string()
-                    );
-                    let profile = Self { name, username, email };
-                    cache::insert(&profile)?;
-                    Ok(profile)
-                },
-                |existing| {
-                    let (username, email) = (username.to_string(), email.to_string());
-                    Err(Error::CombinationExists { username, email, existing })
-                },
-            )
+
+        Ok(Self {
+            name: name.to_string(),
+            username: username.to_string(),
+            email: email.to_string(),
+        })
     }
 
     // TODO maybe implement Read trait?
@@ -71,6 +60,14 @@ impl Profile {
 
     // TODO maybe implement Write trait?
     pub fn write(self) -> Result<()> {
+        let (username, email) = (self.username.clone(), self.email.clone());
+        cache::get(&username, &email)
+            .map_or_else(
+                || cache::insert(&self),
+                |existing| {
+                    Err(Error::CombinationExists { username, email, existing })
+                },
+            )?;
         let (profile_name, partial) = self.into();
         let path = profile_path(&profile_name);
         if Path::new(&path).exists() {

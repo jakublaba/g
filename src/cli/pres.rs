@@ -57,6 +57,7 @@ impl Execute for ProfileCmd {
                     Ok(profile) => {
                         let name = profile.name.clone();
                         let email = profile.email.clone();
+                        println!("Writing profile...");
                         profile.write()
                             .unwrap_with_tip("re-run with --force to overwrite");
                         let result = ssh::try_regenerate_pair(&name, &email, force);

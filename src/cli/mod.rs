@@ -14,14 +14,15 @@ pub struct Cli {
     pub command: Cmd,
 }
 
+// TODO don't expose error when reading profile on cli level fails
 #[derive(Subcommand, Debug)]
 pub enum Cmd {
     /// Switch profiles
     Su {
         /// Name of the profile
         #[arg(
-            value_parser = | name: & str | Profile::read_json(name)
-            .map_err(| _ | format ! ("Profile '{name}' doesn't exist"))
+            value_parser = | name: & str | Profile::read(name)
+            .map_err(| e | format ! ("Can't read profile '{name}', cause:\n{e}"))
         )]
         profile: Profile,
         /// Set the profile for global git config
@@ -95,8 +96,8 @@ pub enum ProfileCmd {
     Regenerate {
         /// Name of the profile
         #[arg(
-            value_parser = | name: & str | Profile::read_json(name)
-            .map_err(| _ | format ! ("Profile '{name}' doesn't exist"))
+            value_parser = | name: & str | Profile::read(name)
+            .map_err(| e | format ! ("Can't read profile '{name}', cause:\n{e}"))
         )]
         profile: Profile,
         /// Type of ssh key: dsa, rsa or ed255119 (default)
