@@ -18,8 +18,8 @@ pub fn configure_user(profile: &Profile, global: bool) -> Result<()> {
     let global = global || !is_inside_repo;
     let mut config = config(global)?;
     // Can safely unwrap those because they throw only for invalid git config key
-    config.set_str("user.name", &profile.user_name).unwrap();
-    config.set_str("user.email", &profile.user_email).unwrap();
+    config.set_str("user.name", &profile.username).unwrap();
+    config.set_str("user.email", &profile.email).unwrap();
     config.set_str("core.sshCommand", &ssh_command(&profile.name)).unwrap();
 
     Ok(())

@@ -9,7 +9,7 @@ use crate::profile::Result;
 
 pub fn insert(profile: &Profile) -> Result<()> {
     let mut cache = load_cache()?;
-    let key = key(&profile.user_name, &profile.user_email);
+    let key = key(&profile.username, &profile.email);
     cache.insert(key, (&profile.name).to_string());
     save_cache(cache)?;
 

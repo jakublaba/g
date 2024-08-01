@@ -1,7 +1,9 @@
-use crate::{git, profile};
+use std::fmt::Display;
+
+use crate::{git, profile, ssh};
 use crate::cli::{Cmd, ProfileCmd};
 use crate::profile::profile::Profile;
-use crate::util::SafeUnwrap;
+use crate::util::{SafeUnwrap, UnwrapWithTip};
 
 pub trait Execute {
     fn execute(self);
@@ -42,14 +44,28 @@ impl Execute for ProfileCmd {
                     })
             }
             ProfileCmd::Show { name } => {
-                match Profile::read_json(&name) {
+                match Profile::read(&name) {
                     Ok(profile) => println!("{profile}"),
                     Err(err) => println!("{err}")
                 }
             }
-            ProfileCmd::Add { name, user_name, user_email, force, key_type } => {
-                let profile = Profile::new(name, user_name, user_email);
-                todo!()
+            ProfileCmd::Add { name, username, email, force, key_type } => {
+                match Profile::new(&name, &username, &email) {
+                    Ok(profile) => {
+                        let name = profile.name.clone();
+                        let email = profile.email.clone();
+                        profile.write()
+                            .unwrap_with_tip("re-run with --force to overwrite");
+                        let result = ssh::try_regenerate_pair(&name, &email, force);
+                        let is_err = result.is_err();
+                        result
+                            .unwrap_with_tip("re-run with --force to re-generate");
+                        if is_err { return; }
+                        todo!(handle unwrap somehow)
+                        let (private, public) = ssh::key::pair(&email, &key_type);
+                    }
+                    Err(err) => println!("{err}")
+                }
             }
             ProfileCmd::Remove { .. } => {}
             ProfileCmd::Edit { .. } => {}
@@ -57,3 +73,5 @@ impl Execute for ProfileCmd {
         }
     }
 }
+
+

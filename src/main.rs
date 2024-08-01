@@ -38,12 +38,12 @@ fn main() {
                     }
                 }
                 ProfileCmd::Show { name } => {
-                    match Profile::read_json(&name) {
+                    match Profile::read(&name) {
                         Ok(p) => println!("{p}"),
                         Err(e) => println!("{e}"),
                     }
                 }
-                ProfileCmd::Add { name, user_name, user_email, force, key_type } => {
+                ProfileCmd::Add { name, user_name, email: user_email, force, key_type } => {
                     add_profile(name, user_name, user_email, key_type, force).safe_unwrap();
                 }
                 ProfileCmd::Remove { profiles } => {
@@ -51,11 +51,11 @@ fn main() {
                         remove_profile(&p).safe_unwrap();
                     }
                 }
-                ProfileCmd::Edit { name, user_name, user_email } => {
+                ProfileCmd::Edit { name, username: user_name, email: user_email } => {
                     edit_profile(name, user_name, user_email).safe_unwrap();
                 }
                 ProfileCmd::Regenerate { profile, key_type } => {
-                    ssh::generate_key_pair(&profile.name, &profile.user_email, key_type, true).safe_unwrap();
+                    ssh::generate_key_pair(&profile.name, &profile.email, key_type, true).safe_unwrap();
                 }
             }
         }

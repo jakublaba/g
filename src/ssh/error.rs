@@ -6,8 +6,10 @@ use crate::ssh::key::MIN_RSA_SIZE;
 pub enum Error {
     #[error("Unknown ssh key type: {0}")]
     UnknownKeyType(String),
+    #[error("Key pair already exists")]
+    KeyPairExists,
     #[error("{0}: Invalid RSA key length. Minimum is {MIN_RSA_SIZE} bits")]
     InvalidRsaLength(usize),
     #[error(transparent)]
-    Crypto(#[from] ssh_key::Error),
+    LibSsh2(#[from] ssh_key::Error),
 }

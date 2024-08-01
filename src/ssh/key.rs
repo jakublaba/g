@@ -75,7 +75,7 @@ impl From<KeyPair> for PrivateKey {
     }
 }
 
-pub(super) fn pair(user_email: &str, key_type: &KeyType) -> Result<(PrivateKey, PublicKey)> {
+pub fn pair(user_email: &str, key_type: &KeyType) -> Result<(PrivateKey, PublicKey)> {
     let mut rng = thread_rng();
     let pair = match key_type {
         KeyType::Dsa => {
@@ -97,7 +97,7 @@ pub(super) fn pair(user_email: &str, key_type: &KeyType) -> Result<(PrivateKey, 
     Ok((private, public))
 }
 
-pub(super) fn public_from_private(profile_name: &str, user_email: &str) -> Option<PublicKey> {
+pub(super) fn public_from_private(profile_name: &str, user_email: &str) -> Result<PublicKey> {
     let private_key_path = path_private(profile_name);
     PrivateKey::read_openssh_file(Path::new(&private_key_path))
         .map(|private| {
@@ -105,21 +105,17 @@ pub(super) fn public_from_private(profile_name: &str, user_email: &str) -> Optio
             public.set_comment(user_email);
             public
         })
-        .ok()
+        .into()
 }
 
-pub(super) fn write_private(profile_name: &str, key: &PrivateKey) {
+pub(super) fn write_private(profile_name: &str, key: &PrivateKey) -> Result<()> {
     let key_path = path_private(profile_name);
-    if let Err(_) = key.write_openssh_file(Path::new(&key_path), LineEnding::LF) {
-        println!("Error writing private key: {key_path}");
-    }
+    key.write_openssh_file(Path::new(&key_path), LineEnding::LF).into()
 }
 
-pub(super) fn write_public(profile_name: &str, key: &PublicKey) {
+pub(super) fn write_public(profile_name: &str, key: &PublicKey) -> Result<()> {
     let key_path = path_public(profile_name);
-    if let Err(_) = key.write_openssh_file(Path::new(&key_path)) {
-        eprintln!("Error writing public key: {key_path}");
-    }
+    key.write_openssh_file(Path::new(&key_path)).into()
 }
 
 pub(crate) fn path_private(profile_name: &str) -> String {

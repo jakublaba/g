@@ -58,11 +58,11 @@ pub enum ProfileCmd {
         #[arg(short, long)]
         name: String,
         /// Git username (user.name in gitconfig)
-        #[arg(short, long = "username")]
-        user_name: String,
+        #[arg(short, long)]
+        username: String,
         /// Git user email (user.email in gitconfig)
-        #[arg(short = 'e', long = "email")]
-        user_email: String,
+        #[arg(short, long)]
+        email: String,
         /// Override profile if exists
         #[arg(short, long)]
         force: bool,
@@ -85,11 +85,11 @@ pub enum ProfileCmd {
         #[arg(short, long)]
         name: String,
         /// Git username (user.name in gitconfig)
-        #[arg(short, long = "username")]
-        user_name: Option<String>,
+        #[arg(short, long)]
+        username: Option<String>,
         /// Git user email (user.email in gitconfig)
-        #[arg(short = 'e', long = "email")]
-        user_email: Option<String>,
+        #[arg(short, long)]
+        email: Option<String>,
     },
     /// Re-generate keys for an existing profile
     Regenerate {

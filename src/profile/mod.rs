@@ -50,15 +50,15 @@ pub fn add_profile(
     force: bool,
 ) -> Result<()> {
     let profile = Profile::new(name, username, email)?;
-    if let Some(p) = cache::get(&profile.user_name, &profile.user_email) {
+    if let Some(p) = cache::get(&profile.username, &profile.email) {
         Err(Error::CombinationExists {
-            username: (&profile.user_name).to_string(),
-            email: (&profile.user_email).to_string(),
-            existing_profile: p,
+            username: (&profile.username).to_string(),
+            email: (&profile.email).to_string(),
+            existing: p,
         })?;
     }
     let profile_name = profile.name.clone();
-    let user_email = profile.user_email.clone();
+    let user_email = profile.email.clone();
     cache::insert(&profile).unwrap();
     generate_profile(profile, force)?;
     ssh::generate_key_pair(&profile_name, &user_email, key_type, force).safe_unwrap();
@@ -75,7 +75,7 @@ fn generate_profile(profile: Profile, force: bool) -> Result<()> {
         if !Path::new(&profiles_dir).exists() {
             fs::create_dir_all(profiles_dir).unwrap();
         }
-        profile.write_json()?;
+        profile.write()?;
         println!("Profile written");
     }
 
@@ -91,22 +91,22 @@ pub fn remove_profile(profile_name: &str) -> Result<()> {
 }
 
 pub fn edit_profile(name: String, user_name: Option<String>, user_email: Option<String>) -> Result<()> {
-    let mut profile = Profile::read_json(&name)?;
-    let user_name_old = profile.user_name.clone();
-    let user_email_old = profile.user_email.clone();
+    let mut profile = Profile::read(&name)?;
+    let user_name_old = profile.username.clone();
+    let user_email_old = profile.email.clone();
     let mut width = 0;
     if let Some(usr_name) = user_name {
         width = width.max(usr_name.len());
-        profile.user_name = usr_name
+        profile.username = usr_name
     };
     if let Some(usr_email) = user_email {
         width = width.max(usr_email.len());
-        profile.user_email = usr_email
+        profile.email = usr_email
     };
-    println!("[{name}] username:\t{user_name_old:width$} -> {:width$}", profile.user_name, width = width);
-    println!("[{name}] email:\t\t{user_email_old:width$} -> {:width$}", profile.user_email, width = width);
+    println!("[{name}] username:\t{user_name_old:width$} -> {:width$}", profile.username, width = width);
+    println!("[{name}] email:\t\t{user_email_old:width$} -> {:width$}", profile.email, width = width);
 
-    profile.write_json()
+    profile.write()
 }
 
 fn rm_file<P: AsRef<Path> + Display>(path: P) {
