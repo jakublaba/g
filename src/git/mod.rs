@@ -48,8 +48,8 @@ pub(crate) fn config(global: bool) -> Result<Config> {
     let config = if global {
         Config::open_default()?
     } else {
-        let current_dir = env::current_dir()?;
-        Config::open(&current_dir)?
+        let config_path = format!("{}/.git/config", env::current_dir()?.display());
+        Config::open(Path::new(&config_path))?
     };
 
     Ok(config)

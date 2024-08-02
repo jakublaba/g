@@ -59,21 +59,25 @@ impl Profile {
 
     // TODO maybe implement Write trait?
     pub fn write(self) -> Result<()> {
-        let (username, email) = (self.username.clone(), self.email.clone());
-        cache::get(&username, &email)
-            .map_or_else(
-                || cache::insert(&self),
-                |existing| {
-                    Err(Error::CombinationExists { username, email, existing })
-                },
-            )?;
-        let (profile_name, partial) = self.into();
+        let (profile_name, partial) = self.clone().into();
         let path = profile_path(&profile_name);
         if Path::new(&path).exists() {
             Err(Error::ProfileExists(profile_name))?
         }
         let bytes = bincode::serialize(&partial)?;
         fs::write(&path, &bytes[..])?;
+
+        cache::get(&self.username, &self.username)
+            .map_or_else(
+                || cache::insert(&self),
+                |existing| {
+                    Err(Error::CombinationExists {
+                        username: (&self.username).to_string(),
+                        email: (&self.email).to_string(),
+                        existing,
+                    })
+                },
+            )?;
 
         Ok(())
     }
