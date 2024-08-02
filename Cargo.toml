@@ -26,3 +26,4 @@ ssh-key = { version = "0.6.6", features = ["dsa", "ed25519", "rsa"] }
 regex = "1.10.5"
 bincode = "1.3.3"
 thiserror = "1.0.63"
+const_format = "0.2.32"
