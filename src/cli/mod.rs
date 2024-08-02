@@ -90,19 +90,14 @@ pub enum ProfileCmd {
         /// Git user email (user.email in gitconfig)
         #[arg(short, long)]
         email: Option<String>,
-    },
-    /// Re-generate keys for an existing profile
-    Regenerate {
-        /// Name of the profile
-        #[arg(
-            value_parser = | name: & str | Profile::read(name)
-            .map_err(| e | format ! ("Can't read profile '{name}', cause:\n{e}"))
-        )]
-        profile: Profile,
-        /// Type of ssh key: dsa, rsa or ed255119 (default)
+        /// Re-generate ssh keys
+        #[arg(short, long)]
+        regenerate: bool,
+        /// Type of ssh key: dsa, rsa or ed25519 (default)
         /// To generate rsa key with specific size, use rsa<size>, e.g. rsa2048
         #[arg(
-            short, long, value_parser = KeyType::parse, default_value = "ed25519", verbatim_doc_comment
+            short, long, value_parser = KeyType::parse, default_value = "ed25519",
+            verbatim_doc_comment, requires = "email", "regenerate"
         )]
         key_type: KeyType,
     },

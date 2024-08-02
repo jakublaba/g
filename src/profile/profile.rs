@@ -58,10 +58,10 @@ impl Profile {
     }
 
     // TODO maybe implement Write trait?
-    pub fn write(self) -> Result<()> {
+    pub fn write(self, overwrite: bool) -> Result<()> {
         let (profile_name, partial) = self.clone().into();
         let path = profile_path(&profile_name);
-        if Path::new(&path).exists() {
+        if Path::new(&path).exists() && !overwrite {
             Err(Error::ProfileExists(profile_name))?
         }
         let bytes = bincode::serialize(&partial)?;

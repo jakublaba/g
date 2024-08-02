@@ -54,16 +54,16 @@ pub fn edit(name: String, user_name: Option<String>, user_email: Option<String>)
     let mut width = 0;
     if let Some(usr_name) = user_name {
         width = width.max(usr_name.len());
-        profile.username = usr_name
+        profile.username = usr_name;
+        println!("[{name}] username:\t{user_name_old:width$} -> {:width$}", profile.username, width = width);
     };
     if let Some(usr_email) = user_email {
         width = width.max(usr_email.len());
-        profile.email = usr_email
+        profile.email = usr_email;
+        println!("[{name}] email:\t\t{user_email_old:width$} -> {:width$}", profile.email, width = width);
     };
-    println!("[{name}] username:\t{user_name_old:width$} -> {:width$}", profile.username, width = width);
-    println!("[{name}] email:\t\t{user_email_old:width$} -> {:width$}", profile.email, width = width);
 
-    profile.write()
+    profile.write(true)
 }
 
 fn rm_file<P: AsRef<Path> + Display>(path: P) {

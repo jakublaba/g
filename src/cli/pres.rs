@@ -3,7 +3,7 @@ use ssh_key::HashAlg;
 use crate::{git, profile, ssh};
 use crate::cli::{Cmd, ProfileCmd};
 use crate::profile::profile::Profile;
-use crate::ssh::key::RandomartHeader;
+use crate::ssh::key::{KeyType, RandomartHeader};
 use crate::util::{SafeUnwrap, UnwrapWithTip};
 
 pub trait Execute {
@@ -56,26 +56,14 @@ impl Execute for ProfileCmd {
                         let name = profile.name.clone();
                         let email = profile.email.clone();
                         println!("Writing profile...");
-                        profile.write()
+                        profile.write(false)
                             .unwrap_with_tip("re-run with --force to overwrite");
                         let result = ssh::try_regenerate_pair(&name, &email, force);
                         let is_err = result.is_err();
                         result
                             .unwrap_with_tip("re-run with --force to re-generate");
                         if is_err { return; }
-                        match ssh::key::pair(&email, &key_type) {
-                            Err(err) => println!("{err}"),
-                            Ok((private, public)) => {
-                                println!("Generating ssh-{key_type} key pair...");
-                                ssh::key::write_private(&name, &private).safe_unwrap();
-                                ssh::key::write_public(&name, &public).safe_unwrap();
-                                println!("Keys written");
-                                let fingerprint = private.fingerprint(HashAlg::Sha256);
-                                let random_art = fingerprint.to_randomart(&key_type.header());
-                                println!("Key fingerprint is: {fingerprint}");
-                                println!("The key's randomart image is:\n{random_art}");
-                            }
-                        }
+                        generate_ssh_keys(&name, &email, &key_type);
                     }
                     Err(err) => println!("{err}")
                 }
@@ -85,14 +73,25 @@ impl Execute for ProfileCmd {
                     profile::remove(p).safe_unwrap()
                 }
             }
-            ProfileCmd::Edit { name, username, email } => {
+            ProfileCmd::Edit { name, username, email, .. } => {
                 profile::edit(name, username, email).safe_unwrap();
-            }
-            ProfileCmd::Regenerate { .. } => {
-                // TODO replace this command with flag for `profile edit`
             }
         }
     }
 }
 
-
+fn generate_ssh_keys(profile_name: &str, email: &str, key_type: &KeyType) {
+    match ssh::key::pair(email, key_type) {
+        Err(err) => println!("{err}"),
+        Ok((private, public)) => {
+            println!("Generating ssh-{key_type} key pair...");
+            ssh::key::write_private(profile_name, &private).safe_unwrap();
+            ssh::key::write_public(profile_name, &public).safe_unwrap();
+            println!("Keys written");
+            let fingerprint = private.fingerprint(HashAlg::Sha256);
+            let random_art = fingerprint.to_randomart(&key_type.header());
+            println!("Key fingerprint is: {fingerprint}");
+            println!("The key's randomart image is:\n{random_art}");
+        }
+    }
+}
