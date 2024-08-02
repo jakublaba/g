@@ -82,7 +82,7 @@ pub enum ProfileCmd {
     /// Edit an existing profile
     Edit {
         /// Name of the profile
-        #[arg(short, long)]
+        #[arg()]
         name: String,
         /// Git username (user.name in gitconfig)
         #[arg(short, long)]
@@ -97,7 +97,7 @@ pub enum ProfileCmd {
         /// To generate rsa key with specific size, use rsa<size>, e.g. rsa2048
         #[arg(
             short, long, value_parser = KeyType::parse, default_value = "ed25519",
-            verbatim_doc_comment, requires = "email", "regenerate"
+            verbatim_doc_comment, requires = "regenerate"
         )]
         key_type: KeyType,
     },

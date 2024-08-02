@@ -8,7 +8,7 @@ pub enum Error {
     UnknownKeyType(String),
     #[error("Key pair already exists")]
     KeyPairExists,
-    #[error("{0}: Invalid RSA key length. Minimum is {MIN_RSA_SIZE} bits")]
+    #[error("Invalid RSA key length ({0}). Minimum is {MIN_RSA_SIZE} bits")]
     InvalidRsaLength(usize),
     #[error(transparent)]
     LibSsh2(#[from] ssh_key::Error),

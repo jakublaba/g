@@ -73,8 +73,16 @@ impl Execute for ProfileCmd {
                     profile::remove(p).safe_unwrap()
                 }
             }
-            ProfileCmd::Edit { name, username, email, .. } => {
-                profile::edit(name, username, email).safe_unwrap();
+            ProfileCmd::Edit { name, username, email, regenerate, key_type } => {
+                profile::edit(&name, &username, &email).safe_unwrap();
+                if regenerate {
+                    match Profile::read(&name) {
+                        Err(err) => println!("{err}"),
+                        Ok(profile) => {
+                            generate_ssh_keys(&profile.name, &profile.email, &key_type);
+                        }
+                    }
+                }
             }
         }
     }
