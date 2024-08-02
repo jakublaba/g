@@ -4,7 +4,7 @@ use std::path::Path;
 use git2::Config;
 
 use crate::git::error::Error;
-use crate::home;
+use crate::HOME;
 use crate::profile::profile::Profile;
 
 type Result<T> = std::result::Result<T, error::Error>;
@@ -56,6 +56,5 @@ pub(crate) fn config(global: bool) -> Result<Config> {
 }
 
 pub(crate) fn ssh_command(profile_name: &str) -> String {
-    let home = home();
-    format!("ssh -i {home}/.ssh/id_{profile_name} -F /dev/null")
+    format!("ssh -i {HOME}/.ssh/id_{profile_name} -F /dev/null")
 }

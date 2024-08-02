@@ -1,5 +1,3 @@
-use std::env;
-
 use clap::Parser;
 
 use crate::cli::Cli;
@@ -11,13 +9,10 @@ mod git;
 mod profile;
 mod util;
 
+const HOME: &str = env!("HOME");
+
 fn main() {
     Cli::parse()
         .command
         .execute()
-}
-
-// TODO could it actually be safe to just evaluate $HOME at compile time?
-pub fn home() -> String {
-    env::var("HOME").unwrap()
 }

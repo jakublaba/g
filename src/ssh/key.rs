@@ -5,7 +5,7 @@ use rand::thread_rng;
 use ssh_key::{LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::{DsaKeypair, Ed25519Keypair, RsaKeypair};
 
-use crate::home;
+use crate::HOME;
 use crate::ssh::error::Error;
 use crate::ssh::Result;
 
@@ -121,13 +121,11 @@ pub fn write_public(profile_name: &str, key: &PublicKey) -> Result<()> {
 }
 
 pub(crate) fn path_private(profile_name: &str) -> String {
-    let home = home();
-    let ssh_dir = format!("{home}/{SSH_DIR}");
+    let ssh_dir = format!("{HOME}/{SSH_DIR}");
     format!("{ssh_dir}/id_{profile_name}")
 }
 
 pub(crate) fn path_public(profile_name: &str) -> String {
-    let home = home();
-    let ssh_dir = format!("{home}/{SSH_DIR}");
+    let ssh_dir = format!("{HOME}/{SSH_DIR}");
     format!("{ssh_dir}/id_{profile_name}.pub")
 }

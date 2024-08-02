@@ -3,9 +3,13 @@ use std::fs;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::path::Path;
 
-use crate::home;
+use const_format::formatcp;
+
+use crate::HOME;
 use crate::profile::profile::Profile;
 use crate::profile::Result;
+
+const CACHE_PATH: &str = formatcp!("{HOME}/.config/g-profiles/.cache");
 
 pub fn insert(profile: &Profile) -> Result<()> {
     let mut cache = load_cache()?;
@@ -42,12 +46,10 @@ fn key(username: &str, email: &str) -> u64 {
 }
 
 fn load_cache() -> Result<HashMap<u64, String>> {
-    let cache_path = cache_path();
-    let path = Path::new(&cache_path);
-    if !path.exists() {
+    if !Path::new(CACHE_PATH).exists() {
         return Ok(HashMap::new());
     }
-    let bytes = fs::read(path)?;
+    let bytes = fs::read(CACHE_PATH)?;
     let cache = bincode::deserialize(&bytes[..])?;
 
     Ok(cache)
@@ -55,11 +57,7 @@ fn load_cache() -> Result<HashMap<u64, String>> {
 
 fn save_cache(cache: HashMap<u64, String>) -> Result<()> {
     let bytes = bincode::serialize(&cache)?;
-    fs::write(&cache_path(), &bytes[..])?;
+    fs::write(CACHE_PATH, &bytes[..])?;
 
     Ok(())
-}
-
-fn cache_path() -> String {
-    format!("{}/.config/g-profiles/.cache", home())
 }

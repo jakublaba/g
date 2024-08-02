@@ -2,11 +2,14 @@ use std::fmt::Display;
 use std::fs;
 use std::path::Path;
 
+use const_format::formatcp;
 use regex::Regex;
 
-use crate::profile::profile::{Profile, profile_path, profiles_dir};
+use crate::HOME;
+use crate::profile::profile::{Profile, profile_path};
 use crate::ssh;
 
+const PROFILES_DIR: &str = formatcp!("{HOME}/.config/g-profiles");
 pub mod profile;
 pub mod cache;
 pub mod error;
@@ -16,8 +19,7 @@ const PROFILE_REGEX: &str = r"g-profiles/(?<prof>[^\.]+)$";
 type Result<T> = std::result::Result<T, error::Error>;
 
 pub fn load_profile_list() -> Vec<String> {
-    let profiles_dir = profiles_dir();
-    let paths = fs::read_dir(&profiles_dir);
+    let paths = fs::read_dir(PROFILES_DIR);
     let regex = Regex::new(PROFILE_REGEX).unwrap();
     return match paths {
         Ok(paths) => {

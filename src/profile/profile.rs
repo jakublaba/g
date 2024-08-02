@@ -4,21 +4,13 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
-use crate::home;
+use crate::HOME;
 use crate::profile::{cache, Result};
 use crate::profile::error::Error;
+use crate::profile::PROFILES_DIR;
 
-const PROFILES_DIR: &str = ".config/g-profiles";
-
-pub fn profiles_dir() -> String {
-    let home = home();
-    format!("{home}/{PROFILES_DIR}")
-}
-
-pub fn profile_path(profile_name: &str) -> String {
-    let home = home();
-    let profiles_dir = format!("{home}/{PROFILES_DIR}");
-    format!("{profiles_dir}/{profile_name}")
+pub(super) fn profile_path(profile_name: &str) -> String {
+    format!("{PROFILES_DIR}/{profile_name}")
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -88,13 +80,12 @@ impl Display for Profile {
         let name = &self.name;
         let user_name = &self.username;
         let user_email = &self.email;
-        let home = home();
 
         write!(f, r#"
 Profile '{name}'
 username:       {user_name}
 email:          {user_email}
-ssh key:        {home}/.ssh/id_{name}
+ssh key:        {HOME}/.ssh/id_{name}
         "#)
     }
 }
