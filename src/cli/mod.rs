@@ -49,13 +49,11 @@ pub(crate) enum ProfileCmd {
     /// Inspect a profile
     Show {
         /// Name of the profile
-        #[arg()]
         name: String,
     },
     /// Add a new profile
     Add {
         /// Name of the profile
-        #[arg(short, long)]
         name: String,
         /// Git username (user.name in gitconfig)
         #[arg(short, long)]
@@ -76,13 +74,11 @@ pub(crate) enum ProfileCmd {
     /// Remove an existing profile
     Remove {
         /// Name of the profile(s)
-        #[arg()]
         profiles: Vec<String>,
     },
     /// Edit an existing profile
     Edit {
         /// Name of the profile
-        #[arg()]
         name: String,
         /// Git username (user.name in gitconfig)
         #[arg(short, long)]
@@ -93,6 +89,7 @@ pub(crate) enum ProfileCmd {
         /// Re-generate ssh keys
         #[arg(short, long)]
         regenerate: bool,
+        /// Applicable only if --regenerate is used
         /// Type of ssh key: dsa, rsa or ed25519 (default)
         /// To generate rsa key with specific size, use rsa<size>, e.g. rsa2048
         #[arg(
