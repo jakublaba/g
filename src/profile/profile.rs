@@ -40,8 +40,7 @@ impl Profile {
         })
     }
 
-    // TODO maybe implement Read trait?
-    pub fn read(profile_name: &str) -> Result<Self> {
+    pub fn load(profile_name: &str) -> Result<Self> {
         let path = profile_path(profile_name);
         let bytes = fs::read(path)?;
         let partial = bincode::deserialize(&bytes[..])?;
@@ -49,8 +48,7 @@ impl Profile {
         Ok((profile_name, partial).into())
     }
 
-    // TODO maybe implement Write trait?
-    pub fn write(self, overwrite: bool) -> Result<()> {
+    pub fn save(self, overwrite: bool) -> Result<()> {
         let (profile_name, partial) = self.clone().into();
         let path = profile_path(&profile_name);
         if Path::new(&path).exists() && !overwrite {

@@ -1,26 +1,26 @@
 use clap::{Parser, Subcommand};
 
 use crate::profile::profile::Profile;
-use crate::ssh::key::KeyType;
+use crate::ssh::key::r#type::KeyType;
 
 mod error;
 pub mod pres;
 
 #[derive(Parser, Debug)]
 #[command(version)]
-pub struct Cli {
+pub(crate) struct Cli {
     #[clap(subcommand)]
     pub command: Cmd,
 }
 
 // TODO don't expose error when reading profile on cli level fails
 #[derive(Subcommand, Debug)]
-pub enum Cmd {
+pub(crate) enum Cmd {
     /// Switch profiles
     Su {
         /// Name of the profile
         #[arg(
-            value_parser = | name: & str | Profile::read(name)
+            value_parser = | name: & str | Profile::load(name)
             .map_err(| e | format ! ("Can't read profile '{name}', cause:\n{e}"))
         )]
         profile: Profile,
@@ -43,7 +43,7 @@ pub enum Cmd {
 }
 
 #[derive(Subcommand, Debug)]
-pub enum ProfileCmd {
+pub(crate) enum ProfileCmd {
     /// List existing profiles
     List,
     /// Inspect a profile

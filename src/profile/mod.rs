@@ -18,7 +18,7 @@ const PROFILE_REGEX: &str = r"g-profiles/(?<prof>[^\.]+)$";
 
 type Result<T> = std::result::Result<T, error::Error>;
 
-pub fn load_profile_list() -> Vec<String> {
+pub(crate) fn list() -> Vec<String> {
     let paths = fs::read_dir(PROFILES_DIR);
     let regex = Regex::new(PROFILE_REGEX).unwrap();
     return match paths {
@@ -41,7 +41,7 @@ pub fn load_profile_list() -> Vec<String> {
     };
 }
 
-pub fn remove(name: &str) -> Result<()> {
+pub(crate) fn remove(name: &str) -> Result<()> {
     rm_file(profile_path(name));
     rm_file(ssh::key::path_private(name));
     rm_file(ssh::key::path_public(name));
@@ -49,23 +49,29 @@ pub fn remove(name: &str) -> Result<()> {
     cache::remove(name)
 }
 
-pub fn edit(name: &str, user_name: &Option<String>, user_email: &Option<String>) -> Result<()> {
-    let mut profile = Profile::read(&name)?;
-    let user_name_old = profile.username.clone();
-    let user_email_old = profile.email.clone();
+pub(crate) fn edit(name: &str, username: Option<String>, email: Option<String>) -> Result<()> {
+    let mut profile = Profile::load(name)?;
+    let old = profile.clone();
     let mut width = 0;
-    if let Some(usr_name) = user_name {
+    let some_username = username.is_some();
+    let some_email = email.is_some();
+    if let Some(usr_name) = username {
         width = width.max(usr_name.len());
         profile.username = usr_name.to_string();
-        println!("[{name}] username:\t{user_name_old:width$} -> {:width$}", profile.username, width = width);
     };
-    if let Some(usr_email) = user_email {
+    if let Some(usr_email) = email {
         width = width.max(usr_email.len());
         profile.email = usr_email.to_string();
-        println!("[{name}] email:\t\t{user_email_old:width$} -> {:width$}", profile.email, width = width);
     };
+    if some_username {
+        println!("[{name}] username:\t{:width$} -> {:width$}", old.username, profile.username, width = width);
+    }
+    if some_email {
+        println!("[{name}] email:\t\t{:width$} -> {:width$}", old.email, profile.email, width = width);
+    }
 
-    profile.write(true)
+
+    profile.save(true)
 }
 
 fn rm_file<P: AsRef<Path> + Display>(path: P) {

@@ -3,7 +3,7 @@ use thiserror::Error;
 use crate::ssh::key::MIN_RSA_SIZE;
 
 #[derive(Error, Debug)]
-pub enum Error {
+pub(crate) enum Error {
     #[error("Unknown ssh key type: {0}")]
     UnknownKeyType(String),
     #[error("Key pair already exists")]

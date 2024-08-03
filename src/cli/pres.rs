@@ -3,10 +3,10 @@ use ssh_key::HashAlg;
 use crate::{git, profile, ssh};
 use crate::cli::{Cmd, ProfileCmd};
 use crate::profile::profile::Profile;
-use crate::ssh::key::{KeyType, RandomartHeader};
+use crate::ssh::key::r#type::{KeyType, RandomArtHeader};
 use crate::util::{SafeUnwrap, UnwrapWithTip};
 
-pub trait Execute {
+pub(crate) trait Execute {
     fn execute(self);
 }
 
@@ -38,14 +38,14 @@ impl Execute for ProfileCmd {
     fn execute(self) {
         match self {
             ProfileCmd::List => {
-                profile::load_profile_list()
+                profile::list()
                     .iter()
                     .for_each(|profile_name| {
                         println!("{profile_name}")
                     })
             }
             ProfileCmd::Show { name } => {
-                match Profile::read(&name) {
+                match Profile::load(&name) {
                     Ok(profile) => println!("{profile}"),
                     Err(err) => println!("{err}")
                 }
@@ -56,7 +56,7 @@ impl Execute for ProfileCmd {
                         let name = profile.name.clone();
                         let email = profile.email.clone();
                         println!("Writing profile...");
-                        profile.write(false)
+                        profile.save(false)
                             .unwrap_with_tip("re-run with --force to overwrite");
                         let result = ssh::try_regenerate_pair(&name, &email, force);
                         let is_err = result.is_err();
@@ -74,9 +74,9 @@ impl Execute for ProfileCmd {
                 }
             }
             ProfileCmd::Edit { name, username, email, regenerate, key_type } => {
-                profile::edit(&name, &username, &email).safe_unwrap();
+                profile::edit(&name, username, email).safe_unwrap();
                 if regenerate {
-                    match Profile::read(&name) {
+                    match Profile::load(&name) {
                         Err(err) => println!("{err}"),
                         Ok(profile) => {
                             generate_ssh_keys(&profile.name, &profile.email, &key_type);

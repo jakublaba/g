@@ -11,7 +11,14 @@ use crate::profile::Result;
 
 const CACHE_PATH: &str = formatcp!("{HOME}/.config/g-profiles/.cache");
 
-pub fn insert(profile: &Profile) -> Result<()> {
+pub(crate) fn get(username: &str, email: &str) -> Option<String> {
+    let mut cache = load_cache().ok()?;
+    let key = key(username, email);
+
+    cache.remove(&key)
+}
+
+pub(super) fn insert(profile: &Profile) -> Result<()> {
     let mut cache = load_cache()?;
     let key = key(&profile.username, &profile.email);
     cache.insert(key, (&profile.name).to_string());
@@ -20,14 +27,7 @@ pub fn insert(profile: &Profile) -> Result<()> {
     Ok(())
 }
 
-pub fn get(username: &str, email: &str) -> Option<String> {
-    let mut cache = load_cache().ok()?;
-    let key = key(username, email);
-
-    cache.remove(&key)
-}
-
-pub fn remove(profile_name: &str) -> Result<()> {
+pub(super) fn remove(profile_name: &str) -> Result<()> {
     let cache = load_cache()?
         .into_iter()
         .filter(|(_, v)| v != profile_name)
