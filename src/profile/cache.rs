@@ -5,11 +5,11 @@ use std::path::Path;
 
 use const_format::formatcp;
 
-use crate::HOME;
 use crate::profile::profile::Profile;
+use crate::profile::PROFILES_DIR;
 use crate::profile::Result;
 
-const CACHE_PATH: &str = formatcp!("{HOME}/.config/g-profiles/.cache");
+const CACHE_PATH: &str = formatcp!("{PROFILES_DIR}/.cache");
 
 pub(crate) fn get(username: &str, email: &str) -> Option<String> {
     let mut cache = load_cache().ok()?;

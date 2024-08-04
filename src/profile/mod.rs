@@ -1,7 +1,4 @@
-use std::fmt::Display;
 use std::fs;
-use std::io::ErrorKind;
-use std::path::Path;
 
 use const_format::formatcp;
 
@@ -18,6 +15,13 @@ pub(crate) const PROFILES_DIR: &str = formatcp!("{HOME}/.config/g-profiles");
 type Result<T> = std::result::Result<T, error::Error>;
 
 /// Loads list of profile names from [`PROFILES_DIR`].
+///
+/// ```
+/// let names = list().expect("Can't load list of profile names");
+/// for profile_name in names {
+///     println!("{profile_name}");
+/// }
+/// ```
 pub fn list() -> Result<Vec<String>> {
     let paths = fs::read_dir(PROFILES_DIR)?;
     let names = paths
@@ -35,16 +39,26 @@ pub fn list() -> Result<Vec<String>> {
     Ok(names)
 }
 
-/// Removes profile with chosen `name` from [`PROFILES_DIR`]
+/// Removes profile with chosen `name` from [`PROFILES_DIR`] and profile cache.
+///
+/// ```
+/// let profile = "example";
+/// remove(profile).expect(&format!("Can't remove {profile}"));
+/// ```
 pub fn remove(name: &str) -> Result<()> {
-    rm_file(profile_path(name));
-    rm_file(ssh::key::path_private(name));
-    rm_file(ssh::key::path_public(name));
+    fs::remove_file(profile_path(name))?;
+    fs::remove_file(ssh::key::path_private(name))?;
+    fs::remove_file(ssh::key::path_public(name))?;
 
     cache::remove(name)
 }
 
 /// Changes `username` and/or `email` for profile with specified `name`
+///
+/// ```
+/// let profile = "example";
+/// edit(profile, None, Some("new@email.com".to_string()))).expect(&format!("Can't edit {profile}"));
+/// ```
 pub fn edit(name: &str, username: Option<String>, email: Option<String>) -> Result<()> {
     let mut profile = Profile::load(name)?;
     if let Some(usr_name) = username {
@@ -55,17 +69,4 @@ pub fn edit(name: &str, username: Option<String>, email: Option<String>) -> Resu
     };
 
     profile.save(true)
-}
-
-fn rm_file<P: AsRef<Path> + Display>(path: P) {
-    match fs::remove_file(&path) {
-        Ok(_) => println!("{path} removed"),
-        Err(err) => {
-            match err.kind() {
-                ErrorKind::NotFound => println!("{path} doesn't exist, skipping"),
-                ErrorKind::PermissionDenied => println!("{path} can't delete due to permissions, skipping"),
-                _ => ()
-            }
-        }
-    }
 }

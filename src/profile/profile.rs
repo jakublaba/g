@@ -13,6 +13,7 @@ pub(super) fn profile_path(profile_name: &str) -> String {
     format!("{PROFILES_DIR}/{profile_name}")
 }
 
+/// Represents a g profile
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Profile {
     pub name: String,
@@ -28,8 +29,15 @@ struct PartialProfile {
 }
 
 impl Profile {
+    /// Validates `name` and constructs [`Profile`]
+    ///
+    /// [`Error::InvalidName`] is returned if `name` starts with the `.` character
+    ///
+    /// ```
+    /// let profile = Profile::new("example", "An example profile", "profile@example.com").unwrap();
+    /// ```
     pub fn new(name: &str, username: &str, email: &str) -> Result<Self> {
-        if name.contains('.') {
+        if name.starts_with('.') {
             Err(Error::InvalidName)?
         }
 
@@ -40,6 +48,14 @@ impl Profile {
         })
     }
 
+    /// Reads and deserializes [`Profile`] from [`PROFILES_DIR`]
+    ///
+    /// Doesn't return any specific errors, just forwards the ones related to io and deserialization
+    ///
+    /// ```
+    /// let name = "example";
+    /// let profile = Profile::load(name).expect("Can't load profile '{name}'");
+    /// ```
     pub fn load(profile_name: &str) -> Result<Self> {
         let path = profile_path(profile_name);
         let bytes = fs::read(path)?;
@@ -48,6 +64,12 @@ impl Profile {
         Ok((profile_name, partial).into())
     }
 
+    /// Serializes and saves [`Profile`] to [`PROFILES_DIR`] and caches its name.
+    ///
+    /// # Errors
+    /// - [`Error::ProfileExists`] if profile with the same name is already saved to [`PROFILES_DIR`]
+    /// - [`Error::CombinationExists`] if username/email combination is already in use by another profile
+    /// (either username or email can overlap, but not both at the same time)
     pub fn save(self, overwrite: bool) -> Result<()> {
         let (profile_name, partial) = self.clone().into();
         let path = profile_path(&profile_name);

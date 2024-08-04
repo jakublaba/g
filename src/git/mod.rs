@@ -13,6 +13,11 @@ pub mod error;
 /// Configures `profile` for git: `user.name`, `user.email` and `core.sshCommand`.
 /// Local git config is used if current working directory is a git repository and `global` is set to `false`.
 /// Otherwise, global config is used.
+///
+/// ```
+/// let profile = Profile::new("example", "Example profile", "user@example.com");
+/// configure_user(&profile, false);
+/// ```
 pub fn configure_user(profile: &Profile, global: bool) -> Result<()> {
     let is_inside_repo = is_inside_repo();
     if !is_inside_repo && !global {
@@ -32,7 +37,12 @@ pub fn configure_user(profile: &Profile, global: bool) -> Result<()> {
 /// Local git config is used if current working directory is a git repository and `global` is set to `false`.
 /// Otherwise, global config is used.
 ///
-/// Will return [`Err`] if config can't be loaded or either of these properties is not set.
+/// Will return [`Error::EmptyProperty`] if either `user.name` or `user.email` is not set.
+/// Other errors are forwarded from [`git2`].
+///
+/// ```
+/// let (username, email) = get_username_and_email(true).expect("Can't open ~/.gitconfig");
+/// ```
 pub fn get_username_and_email(global: bool) -> Result<(String, String)> {
     let global = global || !is_inside_repo();
     let config = config(global)?;
