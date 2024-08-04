@@ -3,44 +3,38 @@ use std::fs;
 use std::path::Path;
 
 use const_format::formatcp;
-use regex::Regex;
 
 use crate::HOME;
 use crate::profile::profile::{Profile, profile_path};
 use crate::ssh;
 
-const PROFILES_DIR: &str = formatcp!("{HOME}/.config/g-profiles");
 pub mod profile;
 pub mod cache;
 pub mod error;
 
-const PROFILE_REGEX: &str = r"g-profiles/(?<prof>[^\.]+)$";
+pub(crate) const PROFILES_DIR: &str = formatcp!("{HOME}/.config/g-profiles");
 
 type Result<T> = std::result::Result<T, error::Error>;
 
-pub(crate) fn list() -> Vec<String> {
-    let paths = fs::read_dir(PROFILES_DIR);
-    let regex = Regex::new(PROFILE_REGEX).unwrap();
-    return match paths {
-        Ok(paths) => {
-            // TODO there must be a way to clean up whatever the fuck is going on with this iterator
-            paths.map(|r| r.unwrap())
-                .map(|p| p.path())
-                .map(|p| p.to_str().unwrap().to_string())
-                .filter(|p| regex.is_match(p))
-                .map(|p| regex.captures(&p)
-                    .unwrap()
-                    .name("prof")
-                    .unwrap()
-                    .as_str()
-                    .into()
-                )
-                .collect()
-        }
-        Err(_) => vec![]
-    };
+/// Loads list of profile names from [`PROFILES_DIR`].
+pub(crate) fn list() -> Result<Vec<String>> {
+    let paths = fs::read_dir(PROFILES_DIR)?;
+    let names = paths
+        .map(|dir_entry| dir_entry.unwrap().path())
+        .filter(|path| path.is_file())
+        .map(|path| path.components()
+            .last().unwrap()
+            .as_os_str()
+            .to_string_lossy()
+            .to_string()
+        )
+        .filter(|name| !name.starts_with('.'))
+        .collect();
+
+    Ok(names)
 }
 
+/// Removes
 pub(crate) fn remove(name: &str) -> Result<()> {
     rm_file(profile_path(name));
     rm_file(ssh::key::path_private(name));
