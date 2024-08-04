@@ -47,7 +47,11 @@ pub(super) enum Cmd {
 #[derive(Subcommand, Debug)]
 pub(super) enum ProfileCmd {
     /// List existing profiles
-    List,
+    List {
+        /// List profiles from cache instead of disk
+        #[arg(short, long)]
+        cached: bool,
+    },
     /// Inspect a profile
     Show {
         /// Name of the profile

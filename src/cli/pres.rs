@@ -40,8 +40,9 @@ impl Presentation for Cmd {
 impl Presentation for ProfileCmd {
     fn present(self) -> Result<()> {
         match self {
-            ProfileCmd::List => {
-                profile::list()?
+            ProfileCmd::List { cached } => {
+                let list = if cached { profile::cache::get_all() } else { profile::list()? };
+                list
                     .iter()
                     .for_each(|profile_name| {
                         println!("{profile_name}")

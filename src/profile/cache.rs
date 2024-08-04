@@ -18,6 +18,15 @@ pub(crate) fn get(username: &str, email: &str) -> Option<String> {
     cache.remove(&key)
 }
 
+pub(crate) fn get_all() -> Vec<String> {
+    match load_cache() {
+        Ok(cache) => cache
+            .into_values()
+            .collect(),
+        Err(_) => vec![]
+    }
+}
+
 pub(super) fn insert(profile: &Profile) -> Result<()> {
     let mut cache = load_cache()?;
     let key = key(&profile.username, &profile.email);
