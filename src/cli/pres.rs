@@ -1,13 +1,19 @@
 use ssh_key::HashAlg;
 
 use crate::{git, profile, ssh};
-use crate::cli::{Cmd, ProfileCmd};
+use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::profile::profile::Profile;
 use crate::ssh::key::r#type::{KeyType, RandomArtHeader};
 use crate::util::{SafeUnwrap, UnwrapWithTip};
 
 pub(crate) trait Presentation {
     fn present(self);
+}
+
+impl Presentation for Cli {
+    fn present(self) {
+        self.command.present()
+    }
 }
 
 impl Presentation for Cmd {

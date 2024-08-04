@@ -10,12 +10,12 @@ pub mod pres;
 #[command(version)]
 pub(crate) struct Cli {
     #[clap(subcommand)]
-    pub command: Cmd,
+    command: Cmd,
 }
 
 // TODO don't expose error when reading profile on cli level fails
 #[derive(Subcommand, Debug)]
-pub(crate) enum Cmd {
+pub(super) enum Cmd {
     /// Switch profiles
     Su {
         /// Name of the profile
@@ -43,7 +43,7 @@ pub(crate) enum Cmd {
 }
 
 #[derive(Subcommand, Debug)]
-pub(crate) enum ProfileCmd {
+pub(super) enum ProfileCmd {
     /// List existing profiles
     List,
     /// Inspect a profile

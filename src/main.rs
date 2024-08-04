@@ -12,7 +12,5 @@ mod util;
 const HOME: &str = env!("HOME");
 
 fn main() {
-    Cli::parse()
-        .command
-        .present()
+    Cli::parse().present()
 }
