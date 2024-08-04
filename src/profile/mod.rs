@@ -60,6 +60,9 @@ pub fn remove(name: &str) -> Result<()> {
 /// edit(profile, None, Some("new@email.com".to_string()))).expect(&format!("Can't edit {profile}"));
 /// ```
 pub fn edit(name: &str, username: Option<String>, email: Option<String>) -> Result<()> {
+    if username.is_none() && email.is_none() {
+        return Ok(());
+    }
     let mut profile = Profile::load(name)?;
     if let Some(usr_name) = username {
         profile.username = usr_name.to_string();
