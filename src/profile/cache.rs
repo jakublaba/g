@@ -3,27 +3,31 @@ use std::fs;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::path::Path;
 
-use crate::home;
+use const_format::formatcp;
+
+use crate::HOME;
 use crate::profile::profile::Profile;
 use crate::profile::Result;
 
-pub fn insert(profile: &Profile) -> Result<()> {
-    let mut cache = load_cache()?;
-    let key = key(&profile.user_name, &profile.user_email);
-    cache.insert(key, (&profile.name).to_string());
-    save_cache(cache)?;
+const CACHE_PATH: &str = formatcp!("{HOME}/.config/g-profiles/.cache");
 
-    Ok(())
-}
-
-pub fn get(username: &str, email: &str) -> Option<String> {
+pub(crate) fn get(username: &str, email: &str) -> Option<String> {
     let mut cache = load_cache().ok()?;
     let key = key(username, email);
 
     cache.remove(&key)
 }
 
-pub fn remove(profile_name: &str) -> Result<()> {
+pub(super) fn insert(profile: &Profile) -> Result<()> {
+    let mut cache = load_cache()?;
+    let key = key(&profile.username, &profile.email);
+    cache.insert(key, (&profile.name).to_string());
+    save_cache(cache)?;
+
+    Ok(())
+}
+
+pub(super) fn remove(profile_name: &str) -> Result<()> {
     let cache = load_cache()?
         .into_iter()
         .filter(|(_, v)| v != profile_name)
@@ -42,12 +46,10 @@ fn key(username: &str, email: &str) -> u64 {
 }
 
 fn load_cache() -> Result<HashMap<u64, String>> {
-    let cache_path = cache_path();
-    let path = Path::new(&cache_path);
-    if !path.exists() {
+    if !Path::new(CACHE_PATH).exists() {
         return Ok(HashMap::new());
     }
-    let bytes = fs::read(path)?;
+    let bytes = fs::read(CACHE_PATH)?;
     let cache = bincode::deserialize(&bytes[..])?;
 
     Ok(cache)
@@ -55,11 +57,7 @@ fn load_cache() -> Result<HashMap<u64, String>> {
 
 fn save_cache(cache: HashMap<u64, String>) -> Result<()> {
     let bytes = bincode::serialize(&cache)?;
-    fs::write(&cache_path(), &bytes[..])?;
+    fs::write(CACHE_PATH, &bytes[..])?;
 
     Ok(())
-}
-
-fn cache_path() -> String {
-    format!("{}/.config/g-profiles/.cache", home())
 }
