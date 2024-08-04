@@ -87,7 +87,7 @@ fn generate_ssh_keys(profile_name: &str, email: &str, key_type: &KeyType) -> Res
     ssh::key::write_public(profile_name, &public)?;
     println!("Keys written");
     let fingerprint = private.fingerprint(HashAlg::Sha256);
-    let random_art = fingerprint.to_randomart(&key_type.header());
+    let random_art = fingerprint.to_randomart(&key_type.random_art_header());
     println!("Key fingerprint is: {fingerprint}");
     println!("The key's randomart image is:\n{random_art}");
 

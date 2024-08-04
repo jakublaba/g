@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use const_format::formatcp;
 use rand::thread_rng;
 use ssh_key::{LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::{DsaKeypair, Ed25519Keypair, RsaKeypair};
@@ -10,8 +11,7 @@ use crate::ssh::key::r#type::KeyType;
 use crate::ssh::Result;
 
 pub(crate) mod r#type;
-
-pub(super) const SSH_DIR: &str = ".ssh";
+const SSH_DIR: &str = formatcp!("{HOME}/.ssh");
 pub(super) const DEFAULT_RSA_SIZE: usize = 3072;
 pub(super) const MIN_RSA_SIZE: usize = 2048;
 
@@ -32,7 +32,13 @@ impl From<KeyPair> for PrivateKey {
     }
 }
 
-pub fn pair(user_email: &str, key_type: &KeyType) -> Result<(PrivateKey, PublicKey)> {
+/// Generate a pair of ssh keys with specified type
+///
+/// `email` param is set as comment in the public key.
+///
+/// The only error specific to this function is when `key_type` is [`KeyType::Rsa`]
+/// with size less that [`MIN_RSA_SIZE`], other errors are forwarded from underlying [`ssh_key`] lib.
+pub fn pair(email: &str, key_type: &KeyType) -> Result<(PrivateKey, PublicKey)> {
     let mut rng = thread_rng();
     let pair = match key_type {
         KeyType::Dsa => {
@@ -49,28 +55,33 @@ pub fn pair(user_email: &str, key_type: &KeyType) -> Result<(PrivateKey, PublicK
     };
     let private = PrivateKey::from(pair);
     let mut public = PublicKey::from(&private);
-    public.set_comment(user_email);
+    public.set_comment(email);
 
     Ok((private, public))
 }
 
-pub(super) fn public_from_private(profile_name: &str, user_email: &str) -> Result<PublicKey> {
+/// Re-generate public key from private one for profile with specified name.
+///
+/// `email` param is set as comment in the public key.
+pub fn public_from_private(profile_name: &str, email: &str) -> Result<PublicKey> {
     let private_key_path = path_private(profile_name);
     PrivateKey::read_openssh_file(Path::new(&private_key_path))
         .map(|private| {
             let mut public = PublicKey::from(&private);
-            public.set_comment(user_email);
+            public.set_comment(email);
             public
         })
         .map_err(|e| e.into())
 }
 
+/// Write private ssh key in openssh format into `~/.ssh/id_{profile_name}`
 pub fn write_private(profile_name: &str, key: &PrivateKey) -> Result<()> {
     let key_path = path_private(profile_name);
     key.write_openssh_file(Path::new(&key_path), LineEnding::LF)
         .map_err(|e| e.into())
 }
 
+/// Write public key in openssh format into `~/.ssh/id_{profile_name}.pub`
 pub fn write_public(profile_name: &str, key: &PublicKey) -> Result<()> {
     let key_path = path_public(profile_name);
     key.write_openssh_file(Path::new(&key_path))
@@ -78,11 +89,9 @@ pub fn write_public(profile_name: &str, key: &PublicKey) -> Result<()> {
 }
 
 pub(crate) fn path_private(profile_name: &str) -> String {
-    let ssh_dir = format!("{HOME}/{SSH_DIR}");
-    format!("{ssh_dir}/id_{profile_name}")
+    format!("{SSH_DIR}/id_{profile_name}")
 }
 
 pub(crate) fn path_public(profile_name: &str) -> String {
-    let ssh_dir = format!("{HOME}/{SSH_DIR}");
-    format!("{ssh_dir}/id_{profile_name}.pub")
+    format!("{SSH_DIR}/id_{profile_name}.pub")
 }

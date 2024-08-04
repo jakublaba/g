@@ -47,13 +47,10 @@ pub fn remove(name: &str) -> Result<()> {
 /// Changes `username` and/or `email` for profile with specified `name`
 pub fn edit(name: &str, username: Option<String>, email: Option<String>) -> Result<()> {
     let mut profile = Profile::load(name)?;
-    let mut width = 0;
     if let Some(usr_name) = username {
-        width = width.max(usr_name.len());
         profile.username = usr_name.to_string();
     };
     if let Some(usr_email) = email {
-        width = width.max(usr_email.len());
         profile.email = usr_email.to_string();
     };
 

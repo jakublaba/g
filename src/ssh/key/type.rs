@@ -4,15 +4,17 @@ use crate::ssh::error::Error;
 use crate::ssh::key::DEFAULT_RSA_SIZE;
 use crate::ssh::Result;
 
+/// Types of ssh keys that g supports
 #[derive(Debug, Clone)]
-pub(crate) enum KeyType {
+pub enum KeyType {
     Dsa,
     Rsa { size: Option<usize> },
     Ed25519,
 }
 
-pub(crate) trait RandomArtHeader {
-    fn header(&self) -> String;
+/// Provides an utility method to quickly obtain randomart header for each [`KeyType`]
+pub trait RandomArtHeader {
+    fn random_art_header(&self) -> String;
 }
 
 impl KeyType {
@@ -40,7 +42,7 @@ impl Display for KeyType {
 }
 
 impl RandomArtHeader for KeyType {
-    fn header(&self) -> String {
+    fn random_art_header(&self) -> String {
         match self {
             KeyType::Dsa => "DSA 1024".to_string(),
             KeyType::Rsa { size } => format!("RSA {}", size.unwrap_or(DEFAULT_RSA_SIZE)),
