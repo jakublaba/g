@@ -7,7 +7,6 @@ use crate::cli::Result;
 use crate::profile::profile::Profile;
 use crate::ssh::key::r#type::{KeyType, RandomArtHeader};
 
-/// Provides `present` method for the cli, to hide presentation logic from main
 pub(crate) trait Presentation {
     fn present(self) -> Result<()>;
 }

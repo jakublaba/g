@@ -13,7 +13,7 @@ pub mod error;
 /// Configures `profile` for git: `user.name`, `user.email` and `core.sshCommand`.
 /// Local git config is used if current working directory is a git repository and `global` is set to `false`.
 /// Otherwise, global config is used.
-pub(crate) fn configure_user(profile: &Profile, global: bool) -> Result<()> {
+pub fn configure_user(profile: &Profile, global: bool) -> Result<()> {
     let is_inside_repo = is_inside_repo();
     if !is_inside_repo && !global {
         println!("No git repository detected, setting profile in global config");
@@ -31,7 +31,9 @@ pub(crate) fn configure_user(profile: &Profile, global: bool) -> Result<()> {
 /// Gets `user.name` and `user.email` from git config.
 /// Local git config is used if current working directory is a git repository and `global` is set to `false`.
 /// Otherwise, global config is used.
-pub(crate) fn get_username_and_email(global: bool) -> Result<(String, String)> {
+///
+/// Will return [`Err`] if config can't be loaded or either of these properties is not set.
+pub fn get_username_and_email(global: bool) -> Result<(String, String)> {
     let global = global || !is_inside_repo();
     let config = config(global)?;
     let username = config.get_string("user.name")
