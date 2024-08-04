@@ -10,6 +10,7 @@ use crate::ssh::key::r#type::{KeyType, RandomArtHeader};
 pub(crate) trait Presentation {
     fn present(self) -> Result<()>;
 }
+
 impl Presentation for Cli {
     fn present(self) -> Result<()> {
         self.command.present()
