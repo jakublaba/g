@@ -1,7 +1,11 @@
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-enum Error {
+pub(crate) enum Error {
+    #[error("No profile set")]
+    NoProfileSet,
+    #[error("{err}\nTip: {tip}")]
+    WithTip { err: Box<dyn std::error::Error>, tip: &'static str },
     #[error(transparent)]
     Git(#[from] crate::git::error::Error),
     #[error(transparent)]

@@ -6,6 +6,8 @@ use crate::ssh::key::r#type::KeyType;
 mod error;
 pub mod pres;
 
+type Result<T> = std::result::Result<T, error::Error>;
+
 #[derive(Parser, Debug)]
 #[command(version)]
 pub(crate) struct Cli {
