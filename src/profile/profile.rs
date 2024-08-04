@@ -23,7 +23,6 @@ pub struct Profile {
 
 #[derive(Serialize, Deserialize)]
 struct PartialProfile {
-    #[serde(rename = "name")]
     username: String,
     email: String,
 }
