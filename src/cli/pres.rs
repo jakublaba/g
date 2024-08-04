@@ -6,12 +6,12 @@ use crate::profile::profile::Profile;
 use crate::ssh::key::r#type::{KeyType, RandomArtHeader};
 use crate::util::{SafeUnwrap, UnwrapWithTip};
 
-pub(crate) trait Execute {
-    fn execute(self);
+pub(crate) trait Presentation {
+    fn present(self);
 }
 
-impl Execute for Cmd {
-    fn execute(self) {
+impl Presentation for Cmd {
+    fn present(self) {
         match self {
             Cmd::Su { profile, global } => {
                 git::configure_user(&profile, global).safe_unwrap();
@@ -28,14 +28,14 @@ impl Execute for Cmd {
                 }
             }
             Cmd::Profile { command } => {
-                command.execute()
+                command.present()
             }
         }
     }
 }
 
-impl Execute for ProfileCmd {
-    fn execute(self) {
+impl Presentation for ProfileCmd {
+    fn present(self) {
         match self {
             ProfileCmd::List => {
                 profile::list()

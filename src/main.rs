@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use crate::cli::Cli;
-use crate::cli::pres::Execute;
+use crate::cli::pres::Presentation;
 
 mod cli;
 mod ssh;
@@ -14,5 +14,5 @@ const HOME: &str = env!("HOME");
 fn main() {
     Cli::parse()
         .command
-        .execute()
+        .present()
 }
