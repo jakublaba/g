@@ -1,5 +1,7 @@
-use std::env;
-use std::path::Path;
+use std::{env, io};
+use std::io::ErrorKind;
+use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
 
 use git2::Config;
 
@@ -62,12 +64,20 @@ fn is_inside_repo() -> bool {
     path.exists() && path.is_dir()
 }
 
+const TIMEOUT: Duration = Duration::from_millis(1);
 fn config(global: bool) -> Result<Config> {
     let config_path = if global {
         format!("{}/.gitconfig", home())
     } else {
         format!("{}/.git/config", env::current_dir()?.display())
     };
+    let lock_path = PathBuf::from(format!("{config_path}.lock"));
+    let start = Instant::now();
+    while lock_path.exists() {
+        if start.elapsed() >= TIMEOUT {
+            Err(io::Error::new(ErrorKind::TimedOut, &*format!("Timed out waiting for {}", lock_path.display())))?;
+        }
+    }
     let config = Config::open(Path::new(&config_path))?;
 
     Ok(config)
@@ -92,9 +102,15 @@ mod test {
     type TestResult<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
     mod configure_user {
+        use std::sync::Mutex;
+
+        use lazy_static::lazy_static;
+
         use super::*;
 
-        // WARNING: due to side effects, these tests are not thread safe, run these on a single thread
+        lazy_static! {
+            static ref ENV_LOCK: Mutex<()> = Mutex::new(());
+        }
 
         #[fixture]
         #[once]
@@ -103,11 +119,11 @@ mod test {
         }
 
         #[fixture]
-        #[once]
         fn fake_home() -> TempDir {
+            let _lock = ENV_LOCK.lock();
             let fake_home = tempdir().unwrap();
             env::set_var("HOME", fake_home.path().to_string_lossy().to_string());
-            eprintln!("temporary HOME override: {}", fake_home.path().display());
+            eprintln!("temporary $HOME override: {}", fake_home.path().display());
 
             fake_home
         }
@@ -122,6 +138,7 @@ mod test {
 
         #[rstest]
         fn set_local_config_in_repo(profile: &Profile, fake_repo: TempDir) -> TestResult<()> {
+            let _lock = ENV_LOCK.lock()?;
             env::set_current_dir(fake_repo.path())?;
 
             let result = configure_user(profile, false);
@@ -139,11 +156,10 @@ mod test {
         }
 
         #[rstest]
-        fn set_global_config_in_repo(profile: &Profile, fake_repo: TempDir, fake_home: &TempDir) -> TestResult<()> {
-            // set up fake repo as current workdir
+        fn set_global_config_in_repo(profile: &Profile, fake_repo: TempDir, fake_home: TempDir) -> TestResult<()> {
+            let _lock = ENV_LOCK.lock()?;
             env::set_current_dir(fake_repo.path())?;
 
-            // temporarily override $HOME env var and set up fake ~/.gitconfig
             env::set_var("HOME", fake_home.path().to_string_lossy().to_string());
             fs::write(fake_home.path().join(".gitconfig"), "")?;
 
@@ -162,11 +178,10 @@ mod test {
         }
 
         #[rstest]
-        fn set_global_config_outside_repo(profile: &Profile, fake_repo: TempDir, fake_home: &TempDir) -> TestResult<()> {
-            // set up fake repo as current workdir
+        fn set_global_config_outside_repo(profile: &Profile, fake_repo: TempDir, fake_home: TempDir) -> TestResult<()> {
+            let _lock = ENV_LOCK.lock()?;
             env::set_current_dir(fake_repo.path())?;
 
-            // temporarily override $HOME env var and set up fake ~/.gitconfig
             fs::write(fake_home.path().join(".gitconfig"), "")?;
 
             let result = configure_user(profile, true);
