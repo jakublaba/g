@@ -4,13 +4,12 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
-use crate::HOME;
-use crate::profile::{cache, Result};
+use crate::home;
+use crate::profile::{cache, profiles_dir, Result};
 use crate::profile::error::Error;
-use crate::profile::PROFILES_DIR;
 
 pub(super) fn profile_path(profile_name: &str) -> String {
-    format!("{PROFILES_DIR}/{profile_name}")
+    format!("{}/{profile_name}", profiles_dir())
 }
 
 /// Represents a g profile
@@ -104,8 +103,8 @@ impl Display for Profile {
 Profile '{name}'
 username:       {user_name}
 email:          {user_email}
-ssh key:        {HOME}/.ssh/id_{name}
-        "#)
+ssh key:        {}/.ssh/id_{name}
+        "#, home())
     }
 }
 

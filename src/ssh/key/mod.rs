@@ -1,17 +1,15 @@
 use std::path::Path;
 
-use const_format::formatcp;
 use rand::thread_rng;
 use ssh_key::{LineEnding, PrivateKey, PublicKey};
 use ssh_key::private::{DsaKeypair, Ed25519Keypair, RsaKeypair};
 
-use crate::HOME;
+use crate::home;
 use crate::ssh::error::Error;
 use crate::ssh::key::r#type::KeyType;
 use crate::ssh::Result;
 
 pub(crate) mod r#type;
-const SSH_DIR: &str = formatcp!("{HOME}/.ssh");
 pub(super) const DEFAULT_RSA_SIZE: usize = 3072;
 pub(super) const MIN_RSA_SIZE: usize = 2048;
 
@@ -89,9 +87,13 @@ pub fn write_public(profile_name: &str, key: &PublicKey) -> Result<()> {
 }
 
 pub(crate) fn path_private(profile_name: &str) -> String {
-    format!("{SSH_DIR}/id_{profile_name}")
+    format!("{}/id_{profile_name}", ssh_dir())
 }
 
 pub(crate) fn path_public(profile_name: &str) -> String {
-    format!("{SSH_DIR}/id_{profile_name}.pub")
+    format!("{}/id_{profile_name}.pub", ssh_dir())
+}
+
+fn ssh_dir() -> String {
+    format!("{}/.ssh", home())
 }

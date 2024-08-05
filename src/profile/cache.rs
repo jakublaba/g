@@ -3,13 +3,8 @@ use std::fs;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::path::Path;
 
-use const_format::formatcp;
-
+use crate::profile::{profiles_dir, Result};
 use crate::profile::profile::Profile;
-use crate::profile::PROFILES_DIR;
-use crate::profile::Result;
-
-const CACHE_PATH: &str = formatcp!("{PROFILES_DIR}/.cache");
 
 pub(crate) fn get(username: &str, email: &str) -> Option<String> {
     let mut cache = load_cache().ok()?;
@@ -55,10 +50,11 @@ fn key(username: &str, email: &str) -> u64 {
 }
 
 fn load_cache() -> Result<HashMap<u64, String>> {
-    if !Path::new(CACHE_PATH).exists() {
+    let cache_path = cache_path();
+    if !Path::new(&cache_path).exists() {
         return Ok(HashMap::new());
     }
-    let bytes = fs::read(CACHE_PATH)?;
+    let bytes = fs::read(&cache_path)?;
     let cache = bincode::deserialize(&bytes[..])?;
 
     Ok(cache)
@@ -66,7 +62,11 @@ fn load_cache() -> Result<HashMap<u64, String>> {
 
 fn save_cache(cache: HashMap<u64, String>) -> Result<()> {
     let bytes = bincode::serialize(&cache)?;
-    fs::write(CACHE_PATH, &bytes[..])?;
+    fs::write(&cache_path(), &bytes[..])?;
 
     Ok(())
+}
+
+fn cache_path() -> String {
+    format!("{}/.cache", profiles_dir())
 }
