@@ -94,12 +94,9 @@ mod test {
     use git2::{Config, Repository};
     use rstest::{fixture, rstest};
     use spectral::assert_that;
-    use spectral::prelude::ResultAssertions;
     use tempfile::{tempdir, TempDir};
 
     use super::*;
-
-    type TestResult<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
     mod configure_user {
         use std::sync::Mutex;
@@ -123,7 +120,6 @@ mod test {
             let _lock = ENV_LOCK.lock();
             let fake_home = tempdir().unwrap();
             env::set_var("HOME", fake_home.path().to_string_lossy().to_string());
-            eprintln!("temporary $HOME override: {}", fake_home.path().display());
 
             fake_home
         }
@@ -137,65 +133,59 @@ mod test {
         }
 
         #[rstest]
-        fn set_local_config_in_repo(profile: &Profile, fake_repo: TempDir) -> TestResult<()> {
-            let _lock = ENV_LOCK.lock()?;
-            env::set_current_dir(fake_repo.path())?;
+        fn set_local_config_in_repo(profile: &Profile, fake_repo: TempDir) {
+            let _lock = ENV_LOCK.lock().unwrap();
+            env::set_current_dir(fake_repo.path()).unwrap();
 
-            let result = configure_user(profile, false);
-            let config = Config::open(&fake_repo.path().join(".git/config"))?.snapshot()?;
+            configure_user(profile, false).unwrap();
+            let config = Config::open(&fake_repo.path().join(".git/config")).unwrap()
+                .snapshot().unwrap();
 
-            assert_that!(result).is_ok();
-            assert_that!(config.get_str("user.name")?)
+            assert_that!(config.get_str("user.name").unwrap())
                 .is_equal_to(&*profile.username);
-            assert_that!(config.get_str("user.email")?)
+            assert_that!(config.get_str("user.email").unwrap())
                 .is_equal_to(&*profile.email);
-            assert_that!(config.get_str("core.sshCommand")?)
+            assert_that!(config.get_str("core.sshCommand").unwrap())
                 .is_equal_to(&*ssh_command(&profile.name));
-
-            Ok(())
         }
 
         #[rstest]
-        fn set_global_config_in_repo(profile: &Profile, fake_repo: TempDir, fake_home: TempDir) -> TestResult<()> {
-            let _lock = ENV_LOCK.lock()?;
-            env::set_current_dir(fake_repo.path())?;
+        fn set_global_config_in_repo(profile: &Profile, fake_repo: TempDir, fake_home: TempDir) {
+            let _lock = ENV_LOCK.lock().unwrap();
+            env::set_current_dir(fake_repo.path()).unwrap();
 
             env::set_var("HOME", fake_home.path().to_string_lossy().to_string());
-            fs::write(fake_home.path().join(".gitconfig"), "")?;
+            fs::write(fake_home.path().join(".gitconfig"), "").unwrap();
 
-            let result = configure_user(profile, true);
-            let config = Config::open(&fake_home.path().join(".gitconfig"))?.snapshot()?;
+            configure_user(profile, true).unwrap();
+            let config = Config::open(&fake_home.path().join(".gitconfig")).unwrap()
+                .snapshot().unwrap();
 
-            assert_that!(result).is_ok();
-            assert_that!(config.get_str("user.name")?)
+            assert_that!(config.get_str("user.name").unwrap())
                 .is_equal_to(&*profile.username);
-            assert_that!(config.get_str("user.email")?)
+            assert_that!(config.get_str("user.email").unwrap())
                 .is_equal_to(&*profile.email);
-            assert_that!(config.get_str("core.sshCommand")?)
+            assert_that!(config.get_str("core.sshCommand").unwrap())
                 .is_equal_to(&*ssh_command(&profile.name));
-
-            Ok(())
         }
 
         #[rstest]
-        fn set_global_config_outside_repo(profile: &Profile, fake_repo: TempDir, fake_home: TempDir) -> TestResult<()> {
-            let _lock = ENV_LOCK.lock()?;
-            env::set_current_dir(fake_repo.path())?;
+        fn set_global_config_outside_repo(profile: &Profile, fake_repo: TempDir, fake_home: TempDir) {
+            let _lock = ENV_LOCK.lock().unwrap();
+            env::set_current_dir(fake_repo.path()).unwrap();
 
-            fs::write(fake_home.path().join(".gitconfig"), "")?;
+            fs::write(fake_home.path().join(".gitconfig"), "").unwrap();
 
-            let result = configure_user(profile, true);
-            let config = Config::open(&fake_home.path().join(".gitconfig"))?.snapshot()?;
+            configure_user(profile, true).unwrap();
+            let config = Config::open(&fake_home.path().join(".gitconfig")).unwrap()
+                .snapshot().unwrap();
 
-            assert_that!(result).is_ok();
-            assert_that!(config.get_str("user.name")?)
+            assert_that!(config.get_str("user.name").unwrap())
                 .is_equal_to(&*profile.username);
-            assert_that!(config.get_str("user.email")?)
+            assert_that!(config.get_str("user.email").unwrap())
                 .is_equal_to(&*profile.email);
-            assert_that!(config.get_str("core.sshCommand")?)
+            assert_that!(config.get_str("core.sshCommand").unwrap())
                 .is_equal_to(&*ssh_command(&profile.name));
-
-            Ok(())
         }
     }
 }
