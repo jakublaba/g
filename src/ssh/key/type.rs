@@ -22,7 +22,7 @@ impl KeyType {
         match arg.to_lowercase().as_str() {
             "dsa" => Ok(Self::Dsa),
             s if s.starts_with("rsa") => {
-                let size = (&s[3..]).parse::<usize>().ok();
+                let size = (s[3..]).parse::<usize>().ok();
                 Ok(Self::Rsa { size })
             }
             "ed25519" => Ok(Self::Ed25519),

@@ -1,4 +1,5 @@
 use std::io;
+use std::path::PathBuf;
 
 use thiserror::Error;
 
@@ -16,8 +17,8 @@ pub(crate) enum Error {
     },
     #[error("Profile with name '{0}' already exists")]
     ProfileExists(String),
-    #[error(transparent)]
-    Io(#[from] io::Error),
+    #[error("{0}, path: {1}")]
+    Io(#[source] io::Error, PathBuf),
     #[error(transparent)]
     Serde(#[from] bincode::Error),
 }

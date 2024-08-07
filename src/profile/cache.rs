@@ -4,6 +4,7 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::path::Path;
 
 use crate::profile::{profiles_dir, Result};
+use crate::profile::error::Error;
 use crate::profile::profile::Profile;
 
 pub(crate) fn get(username: &str, email: &str) -> Option<String> {
@@ -54,15 +55,18 @@ fn load_cache() -> Result<HashMap<u64, String>> {
     if !Path::new(&cache_path).exists() {
         return Ok(HashMap::new());
     }
-    let bytes = fs::read(&cache_path)?;
+    let bytes = fs::read(&cache_path)
+        .map_err(|e| Error::Io(e, cache_path.into()))?;
     let cache = bincode::deserialize(&bytes[..])?;
 
     Ok(cache)
 }
 
 fn save_cache(cache: HashMap<u64, String>) -> Result<()> {
+    let cache_path = cache_path();
     let bytes = bincode::serialize(&cache)?;
-    fs::write(&cache_path(), &bytes[..])?;
+    fs::write(&cache_path, &bytes[..])
+        .map_err(|e| Error::Io(e, cache_path.into()))?;
 
     Ok(())
 }

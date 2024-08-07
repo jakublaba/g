@@ -56,7 +56,8 @@ impl Profile {
     /// ```
     pub fn load(profile_name: &str) -> Result<Self> {
         let path = profile_path(profile_name);
-        let bytes = fs::read(path)?;
+        let bytes = fs::read(&path)
+            .map_err(|e| Error::Io(e, path.into()))?;
         let partial = bincode::deserialize(&bytes[..])?;
 
         Ok((profile_name, partial).into())
@@ -75,7 +76,8 @@ impl Profile {
             Err(Error::ProfileExists(profile_name))?
         }
         let bytes = bincode::serialize(&partial)?;
-        fs::write(&path, &bytes[..])?;
+        fs::write(&path, &bytes[..])
+            .map_err(|e| Error::Io(e, path.into()))?;
 
         cache::get(&self.username, &self.username)
             .map_or_else(
