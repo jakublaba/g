@@ -7,7 +7,7 @@ use git2::Config;
 
 use crate::git::error::Error;
 use crate::home;
-use crate::profile::profile::Profile;
+use crate::profile::model::Profile;
 
 type Result<T> = std::result::Result<T, error::Error>;
 pub mod error;

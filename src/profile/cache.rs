@@ -5,7 +5,7 @@ use std::path::Path;
 
 use crate::profile::{profiles_dir, Result};
 use crate::profile::error::Error;
-use crate::profile::profile::Profile;
+use crate::profile::model::Profile;
 
 pub(crate) fn get(username: &str, email: &str) -> Option<String> {
     let mut cache = load_cache().ok()?;
@@ -26,7 +26,7 @@ pub(crate) fn get_all() -> Vec<String> {
 pub(super) fn insert(profile: &Profile) -> Result<()> {
     let mut cache = load_cache()?;
     let key = key(&profile.username, &profile.email);
-    cache.insert(key, (&profile.name).to_string());
+    cache.insert(key, (profile.name).to_string());
     save_cache(cache)?;
 
     Ok(())

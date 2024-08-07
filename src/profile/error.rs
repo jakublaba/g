@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub(crate) enum Error {
+pub enum Error {
     #[error("Profile name can't start with '.'")]
     InvalidName,
     #[error(

@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use crate::profile::profile::Profile;
+use crate::profile::model::Profile;
 use crate::ssh::key::r#type::KeyType;
 
 mod error;

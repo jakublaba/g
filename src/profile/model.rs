@@ -84,8 +84,8 @@ impl Profile {
                 || cache::insert(&self),
                 |existing| {
                     Err(Error::CombinationExists {
-                        username: (&self.username).to_string(),
-                        email: (&self.email).to_string(),
+                        username: (self.username).to_string(),
+                        email: (self.email).to_string(),
                         existing,
                     })
                 },
@@ -121,13 +121,13 @@ impl From<(&str, PartialProfile)> for Profile {
     }
 }
 
-impl Into<(String, PartialProfile)> for Profile {
-    fn into(self) -> (String, PartialProfile) {
+impl From<Profile> for (String, PartialProfile) {
+    fn from(profile: Profile) -> Self {
         let partial = PartialProfile {
-            username: self.username,
-            email: self.email,
+            username: profile.username,
+            email: profile.email,
         };
 
-        (self.name, partial)
+        (profile.name, partial)
     }
 }

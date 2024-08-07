@@ -2,9 +2,9 @@ use std::fs;
 
 use crate::{home, ssh};
 use crate::profile::error::Error;
-use crate::profile::profile::{Profile, profile_path};
+use crate::profile::model::{Profile, profile_path};
 
-pub mod profile;
+pub mod model;
 pub mod cache;
 pub mod error;
 
