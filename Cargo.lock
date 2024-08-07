@@ -606,7 +606,6 @@ dependencies = [
  "cargo-llvm-cov",
  "clap",
  "git2",
- "lazy_static",
  "mockall",
  "rand 0.8.5",
  "rstest",

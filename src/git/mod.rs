@@ -99,15 +99,7 @@ mod test {
     use super::*;
 
     mod configure_user {
-        use std::sync::Mutex;
-
-        use lazy_static::lazy_static;
-
         use super::*;
-
-        lazy_static! {
-            static ref ENV_LOCK: Mutex<()> = Mutex::new(());
-        }
 
         #[fixture]
         #[once]
@@ -117,7 +109,6 @@ mod test {
 
         #[fixture]
         fn fake_home() -> TempDir {
-            let _lock = ENV_LOCK.lock();
             let fake_home = tempdir().unwrap();
             env::set_var("HOME", fake_home.path().to_string_lossy().to_string());
 
@@ -134,7 +125,6 @@ mod test {
 
         #[rstest]
         fn set_local_config_in_repo(profile: &Profile, fake_repo: TempDir) {
-            let _lock = ENV_LOCK.lock().unwrap();
             env::set_current_dir(fake_repo.path()).unwrap();
 
             configure_user(profile, false).unwrap();
@@ -151,7 +141,6 @@ mod test {
 
         #[rstest]
         fn set_global_config_in_repo(profile: &Profile, fake_repo: TempDir, fake_home: TempDir) {
-            let _lock = ENV_LOCK.lock().unwrap();
             env::set_current_dir(fake_repo.path()).unwrap();
 
             env::set_var("HOME", fake_home.path().to_string_lossy().to_string());
@@ -171,7 +160,6 @@ mod test {
 
         #[rstest]
         fn set_global_config_outside_repo(profile: &Profile, fake_repo: TempDir, fake_home: TempDir) {
-            let _lock = ENV_LOCK.lock().unwrap();
             env::set_current_dir(fake_repo.path()).unwrap();
 
             fs::write(fake_home.path().join(".gitconfig"), "").unwrap();
