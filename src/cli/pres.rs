@@ -4,7 +4,7 @@ use crate::{git, profile, ssh};
 use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::cli::error::Error;
 use crate::cli::Result;
-use crate::profile::profile::Profile;
+use crate::profile::model::Profile;
 use crate::ssh::key::r#type::{KeyType, RandomArtHeader};
 
 pub(crate) trait Presentation {

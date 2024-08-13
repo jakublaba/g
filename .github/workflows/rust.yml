@@ -20,10 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
-    - name: Verify
-      run: cargo check --verbose
-    - name: Run tests
-      run: cargo test --verbose
+      - uses: actions/checkout@v4
+      - name: Build
+        run: cargo build --verbose
+      - name: Verify
+        run: cargo check --verbose
+      - name: Run tests
+        run: cargo test --verbose -- --test-threads 1

@@ -1,3 +1,5 @@
+use std::env;
+
 use clap::Parser;
 
 use crate::cli::Cli;
@@ -8,7 +10,9 @@ mod ssh;
 mod git;
 mod profile;
 
-const HOME: &str = env!("HOME");
+fn home() -> String {
+    env::var("HOME").unwrap()
+}
 
 fn main() {
     if let Err(err) = Cli::parse().present() {

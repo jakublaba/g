@@ -4,13 +4,12 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
-use crate::HOME;
-use crate::profile::{cache, Result};
+use crate::home;
+use crate::profile::{cache, profiles_dir, Result};
 use crate::profile::error::Error;
-use crate::profile::PROFILES_DIR;
 
 pub(super) fn profile_path(profile_name: &str) -> String {
-    format!("{PROFILES_DIR}/{profile_name}")
+    format!("{}/{profile_name}", profiles_dir())
 }
 
 /// Represents a g profile
@@ -23,7 +22,6 @@ pub struct Profile {
 
 #[derive(Serialize, Deserialize)]
 struct PartialProfile {
-    #[serde(rename = "name")]
     username: String,
     email: String,
 }
@@ -58,7 +56,8 @@ impl Profile {
     /// ```
     pub fn load(profile_name: &str) -> Result<Self> {
         let path = profile_path(profile_name);
-        let bytes = fs::read(path)?;
+        let bytes = fs::read(&path)
+            .map_err(|e| Error::Io(e, path.into()))?;
         let partial = bincode::deserialize(&bytes[..])?;
 
         Ok((profile_name, partial).into())
@@ -77,15 +76,16 @@ impl Profile {
             Err(Error::ProfileExists(profile_name))?
         }
         let bytes = bincode::serialize(&partial)?;
-        fs::write(&path, &bytes[..])?;
+        fs::write(&path, &bytes[..])
+            .map_err(|e| Error::Io(e, path.into()))?;
 
         cache::get(&self.username, &self.username)
             .map_or_else(
                 || cache::insert(&self),
                 |existing| {
                     Err(Error::CombinationExists {
-                        username: (&self.username).to_string(),
-                        email: (&self.email).to_string(),
+                        username: (self.username).to_string(),
+                        email: (self.email).to_string(),
                         existing,
                     })
                 },
@@ -105,8 +105,8 @@ impl Display for Profile {
 Profile '{name}'
 username:       {user_name}
 email:          {user_email}
-ssh key:        {HOME}/.ssh/id_{name}
-        "#)
+ssh key:        {}/.ssh/id_{name}
+        "#, home())
     }
 }
 
@@ -121,13 +121,13 @@ impl From<(&str, PartialProfile)> for Profile {
     }
 }
 
-impl Into<(String, PartialProfile)> for Profile {
-    fn into(self) -> (String, PartialProfile) {
+impl From<Profile> for (String, PartialProfile) {
+    fn from(profile: Profile) -> Self {
         let partial = PartialProfile {
-            username: self.username,
-            email: self.email,
+            username: profile.username,
+            email: profile.email,
         };
 
-        (self.name, partial)
+        (profile.name, partial)
     }
 }
