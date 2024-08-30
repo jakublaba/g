@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::path::Path;
 
 const HOME: &str = env!("HOME");
 const PROFILES_DIR: &str = ".config/g-profiles";
@@ -31,7 +32,11 @@ fn main() {
 }
 
 fn list_profiles() -> Vec<String> {
-    fs::read_dir(format!("{HOME}/{PROFILES_DIR}"))
+    let path = format!("{HOME}/{PROFILES_DIR}");
+    if !Path::new(&path).exists() {
+        return vec![];
+    }
+    fs::read_dir(path)
         .unwrap()
         .map(|dir_entry| dir_entry.unwrap().path())
         .filter(|path| path.is_file())
