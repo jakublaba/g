@@ -24,14 +24,12 @@ cargo install g-rs
 To get started, you'll need to create your first profile.
 
 ```
-g profile add johnsmith --username "John Smith" --email john.smith@example.com
+g profile add johnsmith "John Smith" john.smith@example.com
 ```
 
 By default, g looks if the profile file exists - skipping this stage if it does.
-> Warning: Data inside existing profile is not validated against your cli arguments in this case, to edit it you'll need
-> to use `g profile edit`
 
-Duplicating profile names is not allowed, using the same username + email combination for 2 different profiles is also
+Duplicating profile name is not allowed, using the same username + email combination for 2 different profiles is also
 not allowed.
 
 Then g generates ssh keys - if none exist, they're both generated; if private exists, public is re-generated from it.
