@@ -1,23 +1,29 @@
 use clap::{Parser, Subcommand};
 
-use crate::profile::profile::Profile;
-use crate::ssh::key::KeyType;
+use crate::profile::model::Profile;
+use crate::ssh::key::r#type::KeyType;
+
+mod error;
+pub mod pres;
+
+type Result<T> = std::result::Result<T, error::Error>;
 
 #[derive(Parser, Debug)]
 #[command(version)]
-pub struct Cli {
+pub(crate) struct Cli {
     #[clap(subcommand)]
-    pub command: Option<Cmd>,
+    command: Cmd,
 }
 
+// TODO don't expose error when reading profile on cli level fails
 #[derive(Subcommand, Debug)]
-pub enum Cmd {
+pub(super) enum Cmd {
     /// Switch profiles
     Su {
         /// Name of the profile
         #[arg(
-            value_parser = | name: & str | Profile::read_json(name)
-            .map_err(| _ | format ! ("Profile '{name}' doesn't exist"))
+            value_parser = | name: & str | Profile::load(name)
+            .map_err(| e | format ! ("Can't read profile '{name}', cause:\n{e}"))
         )]
         profile: Profile,
         /// Set the profile for global git config
@@ -34,31 +40,33 @@ pub enum Cmd {
     /// Manage profiles
     Profile {
         #[clap(subcommand)]
-        command: Option<ProfileCmd>,
+        command: ProfileCmd,
     },
 }
 
 #[derive(Subcommand, Debug)]
-pub enum ProfileCmd {
+pub(super) enum ProfileCmd {
     /// List existing profiles
-    List,
+    List {
+        /// List profiles from cache instead of disk
+        #[arg(short, long)]
+        cached: bool,
+    },
     /// Inspect a profile
     Show {
         /// Name of the profile
-        #[arg()]
         name: String,
     },
     /// Add a new profile
     Add {
         /// Name of the profile
-        #[arg(short, long)]
         name: String,
         /// Git username (user.name in gitconfig)
-        #[arg(short, long = "username")]
-        user_name: String,
+        #[arg(short, long)]
+        username: String,
         /// Git user email (user.email in gitconfig)
-        #[arg(short = 'e', long = "email")]
-        user_email: String,
+        #[arg(short, long)]
+        email: String,
         /// Override profile if exists
         #[arg(short, long)]
         force: bool,
@@ -72,33 +80,27 @@ pub enum ProfileCmd {
     /// Remove an existing profile
     Remove {
         /// Name of the profile(s)
-        #[arg()]
         profiles: Vec<String>,
     },
     /// Edit an existing profile
     Edit {
         /// Name of the profile
-        #[arg(short, long)]
         name: String,
         /// Git username (user.name in gitconfig)
-        #[arg(short, long = "username")]
-        user_name: Option<String>,
+        #[arg(short, long)]
+        username: Option<String>,
         /// Git user email (user.email in gitconfig)
-        #[arg(short = 'e', long = "email")]
-        user_email: Option<String>,
-    },
-    /// Re-generate keys for an existing profile
-    Regenerate {
-        /// Name of the profile
-        #[arg(
-            value_parser = | name: & str | Profile::read_json(name)
-            .map_err(| _ | format ! ("Profile '{name}' doesn't exist"))
-        )]
-        profile: Profile,
-        /// Type of ssh key: dsa, rsa or ed255119 (default)
+        #[arg(short, long)]
+        email: Option<String>,
+        /// Re-generate ssh keys
+        #[arg(short, long)]
+        regenerate: bool,
+        /// Applicable only if --regenerate is used
+        /// Type of ssh key: dsa, rsa or ed25519 (default)
         /// To generate rsa key with specific size, use rsa<size>, e.g. rsa2048
         #[arg(
-            short, long, value_parser = KeyType::parse, default_value = "ed25519", verbatim_doc_comment
+            short, long, value_parser = KeyType::parse, default_value = "ed25519",
+            verbatim_doc_comment, requires = "regenerate"
         )]
         key_type: KeyType,
     },

@@ -24,22 +24,23 @@ cargo install g-rs
 To get started, you'll need to create your first profile.
 
 ```
-g profile add --name johnsmith --username "John Smith" --email john.smith@example.com
+g profile add johnsmith --username "John Smith" --email john.smith@example.com
 ```
 
-By default, it looks if the profile file exists - skipping this stage if it doesn't.
+By default, g looks if the profile file exists - skipping this stage if it does.
 > Warning: Data inside existing profile is not validated against your cli arguments in this case, to edit it you'll need
 > to use `g profile edit`
 
-Then it attempts to generate ssh key pair for this profile - if private key already exists, public key is generated from
-it, otherwise both are generated from scratch.
+Duplicating profile names is not allowed, using the same username + email combination for 2 different profiles is also
+not allowed.
 
-You can also run this command with `--force` flag to re-generate everything without warning.
+Then g generates ssh keys - if none exist, they're both generated; if private exists, public is re-generated from it.
+You can also run this command with `--force` flag to overwrite profile if it exists and re-generate ssh keys.
 
 ## Inspecting your profiles
 
 You can list all existing g profiles with `g profile list`. \
-To see settings of a specific profile, use `g profile show <PROFILE_NAME>`.
+To see properties of a specific profile, use `g profile show <PROFILE_NAME>`.
 
 ## Switching profiles
 
@@ -58,14 +59,12 @@ command/subcommand.
 
 # How does it work?
 
-g stores your profiles in `~/.config/g-profiles/`.
-Data is serialized to binary for faster read/write speeds and to take up less storage.
-Files there are named the same as profiles.
-Ssh keys related to the profile are stored as `~/.ssh/id_<PROFILE_NAME>` and `~/.ssh/id_<PROFILE_NAME>.pub`.
-Supported ssh key types are: dsa, rsa and ed25519.
-> Warning: File names matter, if you manually alter them, g won't be able to find them
+Switching profiles doesn't do anything fancy - it just finds the correct git config and sets `user.name`, `user.email`
+and `core.sshCommand` there.
 
-When switching profiles, g sets the following in git config:
+Your profiles are serialized to bytes and saved under `~/.config/g-profiles/`. \
+Ssh keys are stored in the standard location - `~/.ssh`. \
 
-- `user.name` and `user.email` for git to recognize you
-- `core.sshCommand` for authorization
+When using `whoami` command, g infers your identity from `user.name` and `user.email` set in detected git config.
+In order to avoid scanning all profiles for that, g caches a small key-value store in `~/.config/g-profiles/.cache`.
+When you remove a profile, it's also wiped from this cache.
