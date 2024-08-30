@@ -2,20 +2,14 @@ name: Rust
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "release*" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "release*" ]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  exit_if_draft:
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == true
-    steps:
-      - name: Do not run on draft PRs
-        run: exit 0
   build:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
