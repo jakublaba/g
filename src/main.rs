@@ -2,13 +2,13 @@ use std::env;
 
 use clap::Parser;
 
-use crate::cli::Cli;
 use crate::cli::pres::Presentation;
+use crate::cli::Cli;
 
 mod cli;
-mod ssh;
 mod git;
 mod profile;
+mod ssh;
 
 fn home() -> String {
     env::var("HOME").unwrap()
