@@ -35,7 +35,7 @@ pub(super) enum Cmd {
     WhoAmI {
         /// Look up the profile in global config instead
         #[arg(short, long)]
-        global: bool
+        global: bool,
     },
     /// Manage profiles
     Profile {
@@ -62,10 +62,8 @@ pub(super) enum ProfileCmd {
         /// Name of the profile
         name: String,
         /// Git username (user.name in gitconfig)
-        #[arg(short, long)]
         username: String,
         /// Git user email (user.email in gitconfig)
-        #[arg(short, long)]
         email: String,
         /// Override profile if exists
         #[arg(short, long)]
