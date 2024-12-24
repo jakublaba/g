@@ -1,5 +1,5 @@
 use std::fs;
-
+use std::path::Path;
 use crate::{home, ssh};
 use crate::profile::error::Error;
 use crate::profile::model::{Profile, profile_path};
@@ -11,6 +11,15 @@ pub mod error;
 type Result<T> = std::result::Result<T, error::Error>;
 
 const PROFILES_DIR: &str = ".config/g-profiles";
+
+/// Ensures [`PROFILES_DIR`] exists - recursively creating the path if it doesn't, otherwise
+/// does nothing.
+pub fn ensure_profile_dir() -> Result<()> {
+    let profiles_dir = profiles_dir();
+    let path = Path::new(&profiles_dir);
+    fs::create_dir_all(path)
+        .map_err(|e| Error::Io(e, path.into()))
+}
 
 /// Loads list of profile names from [`PROFILES_DIR`].
 ///
