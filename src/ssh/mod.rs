@@ -1,11 +1,23 @@
+use std::fs;
 use std::path::Path;
-
+use crate::home;
 use crate::ssh::error::Error;
 
 pub mod error;
 pub mod key;
 
 type Result<T> = std::result::Result<T, error::Error>;
+
+fn ssh_dir() -> String {
+    format!("{}/.ssh", home())
+}
+
+pub(crate) fn ensure_ssh_dir() -> Result<()> {
+    let ssh_dir = ssh_dir();
+    let path = Path::new(&ssh_dir);
+    fs::create_dir_all(path)
+        .map_err(|e| Error::Io(e, path.into()))
+}
 
 pub(crate) fn try_regenerate_pair(profile_name: &str, email: &str, force: bool) -> Result<()> {
     if !force && Path::new(&key::path_private(profile_name)).exists() {

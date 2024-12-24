@@ -4,10 +4,9 @@ use rand::thread_rng;
 use ssh_key::private::{DsaKeypair, Ed25519Keypair, RsaKeypair};
 use ssh_key::{LineEnding, PrivateKey, PublicKey};
 
-use crate::home;
 use crate::ssh::error::Error;
 use crate::ssh::key::r#type::KeyType;
-use crate::ssh::Result;
+use crate::ssh::{ssh_dir, Result};
 
 pub(crate) mod r#type;
 pub(super) const DEFAULT_RSA_SIZE: usize = 3072;
@@ -90,10 +89,6 @@ pub(crate) fn path_private(profile_name: &str) -> String {
 
 pub(crate) fn path_public(profile_name: &str) -> String {
     format!("{}/id_{profile_name}.pub", ssh_dir())
-}
-
-fn ssh_dir() -> String {
-    format!("{}/.ssh", home())
 }
 
 #[cfg(test)]

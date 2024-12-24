@@ -4,7 +4,9 @@ use crate::{git, profile, ssh};
 use crate::cli::{Cli, Cmd, ProfileCmd};
 use crate::cli::error::Error;
 use crate::cli::Result;
+use crate::profile::{ensure_profile_dir};
 use crate::profile::model::Profile;
+use crate::ssh::ensure_ssh_dir;
 use crate::ssh::key::r#type::{KeyType, RandomArtHeader};
 
 pub(crate) trait Presentation {
@@ -41,6 +43,7 @@ impl Presentation for ProfileCmd {
     fn present(self) -> Result<()> {
         match self {
             ProfileCmd::List { cached } => {
+                // TODO user sees IO error when PROFILES_DIR doesn't exist
                 let list = if cached { profile::cache::get_all() } else { profile::list()? };
                 list
                     .iter()
@@ -49,15 +52,18 @@ impl Presentation for ProfileCmd {
                     });
             }
             ProfileCmd::Show { name } => {
+                // TODO user sees IO error when profile doesn't exist
                 println!("{}", Profile::load(&name)?);
             }
             ProfileCmd::Add { name, username, email, force, key_type } => {
+                ensure_profile_dir()?;
                 let profile = Profile::new(&name, &username, &email)?;
                 println!("Writing profile...");
                 profile.save(false).map_err(|err| {
                     let err = Box::new(err);
                     Error::WithTip { err, tip: "re-run with --force to overwrite" }
                 })?;
+                ensure_ssh_dir()?;
                 ssh::try_regenerate_pair(&name, &email, force).map_err(|err| {
                     let err = Box::new(err);
                     Error::WithTip { err, tip: "re-run with --force to re-generate" }

@@ -1,3 +1,5 @@
+use std::io;
+use std::path::PathBuf;
 use thiserror::Error;
 
 use crate::ssh::key::MIN_RSA_SIZE;
@@ -12,4 +14,6 @@ pub(crate) enum Error {
     InvalidRsaLength(usize),
     #[error(transparent)]
     LibSsh2(#[from] ssh_key::Error),
+    #[error("{0}, path: {1}")]
+    Io(#[source] io::Error, PathBuf),
 }
